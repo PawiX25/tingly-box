@@ -5,10 +5,13 @@ A CLI tool and server for managing multiple AI model providers with a unified Op
 ## Features
 
 - **CLI Management**: Add, list, and delete AI provider configurations
+- **Interactive Interface**: User-friendly interactive CLI for easy management
+- **Web Dashboard**: Simple web interface for configuration and monitoring
 - **Unified Endpoint**: Single OpenAI-compatible API endpoint for all providers
 - **Dynamic Configuration**: Hot-reload configuration changes without server restart
 - **JWT Authentication**: Secure token-based API access
 - **Encrypted Storage**: Secure storage of sensitive API tokens
+- **Memory Logging**: Persistent operation history and statistics
 
 ## Quick Start
 
@@ -66,16 +69,55 @@ curl -X POST http://localhost:8080/v1/chat/completions \
 - `tingly delete <name>` - Delete a provider configuration
 - `tingly token` - Generate a JWT authentication token
 - `tingly example` - Generate example token and curl command for testing
+- `tingly interactive` - Enter interactive management mode
+- `tingly restart [--port <port>]` - Restart the server
 
 ### Server Management
 
 - `tingly start [--port <port>]` - Start the server (default port: 8080)
 - `tingly stop` - Stop the running server
+- `tingly restart [--port <port>]` - Restart the server
 - `tingly status` - Check server status and configuration
 
-## Configuration
+### Interactive Management
+
+- `tingly interactive` - Enter interactive mode with menu-driven interface
+
+## Web Interface
+
+Tingly Box also provides a simple web dashboard for configuration management:
+
+```bash
+# Start the web interface (on port 9090)
+./tingly start --port 9090
+
+# Access the dashboard at
+http://localhost:9090
+```
+
+### Web Interface Features:
+
+- **Dashboard**: Overview of server status and system information
+- **Provider Management**: Add, remove, and view AI providers
+- **Server Control**: Start, stop, and restart the server
+- **Token Generation**: Generate JWT tokens for API access
+- **Activity History**: View recent operations and statistics
+
+## Configuration and Memory
 
 Configuration is stored securely in `~/.tingly-box/config.enc` with encryption based on your hostname.
+
+Tingly Box maintains operation history and system state in the `memory/` directory:
+
+- `memory/history.json` - Complete operation history with timestamps
+- `memory/status.json` - Current server status and statistics
+
+### Memory Features:
+
+- **Operation Logging**: All provider and server actions are logged
+- **Persistent History**: Operation history persists across restarts
+- **Statistics**: Action counts and server metrics
+- **Crash Recovery**: System state is preserved for recovery
 
 ## API Endpoints
 
