@@ -1,17 +1,15 @@
 package web
 
 import (
-	"encoding/json"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
-	"strings"
 
-	"github.com/gin-gonic/gin"
 	"tingly-box/internal/auth"
 	"tingly-box/internal/config"
 	"tingly-box/internal/memory"
+
+	"github.com/gin-gonic/gin"
 )
 
 // WebServer provides a simple web interface for configuration management
@@ -52,6 +50,20 @@ func (ws *WebServer) setupRoutes() {
 	ws.router.LoadHTMLGlob("web/templates/*")
 	ws.router.Static("/static", "./web/static")
 
+	// Dashboard endpoints
+	ws.router.GET("/", ws.dashboard)
+	ws.router.GET("/dashboard", ws.dashboard)
+
+	// UI page routes
+	ui := ws.router.Group("/ui")
+	{
+		ui.GET("/", ws.dashboard)
+		ui.GET("/dashboard", ws.dashboard)
+		ui.GET("/providers", ws.providersPage)
+		ui.GET("/server", ws.serverPage)
+		ui.GET("/history", ws.historyPage)
+	}
+
 	// API routes
 	api := ws.router.Group("/api")
 	{
@@ -65,12 +77,6 @@ func (ws *WebServer) setupRoutes() {
 		api.GET("/token", ws.generateToken)
 		api.GET("/history", ws.getHistory)
 	}
-
-	// Web page routes
-	ws.router.GET("/", ws.dashboard)
-	ws.router.GET("/providers", ws.providersPage)
-	ws.router.GET("/server", ws.serverPage)
-	ws.router.GET("/history", ws.historyPage)
 }
 
 // getRouter returns the gin router
@@ -161,9 +167,9 @@ func (ws *WebServer) getStatus(c *gin.Context) {
 	}
 
 	status := gin.H{
-		"server_running": false,
-		"port":           ws.config.GetServerPort(),
-		"providers_total": len(providers),
+		"server_running":    false,
+		"port":              ws.config.GetServerPort(),
+		"providers_total":   len(providers),
 		"providers_enabled": enabledCount,
 	}
 

@@ -100,6 +100,9 @@ func (s *Server) setupRoutes() {
 	// Health check endpoint
 	s.router.GET("/health", s.HealthCheck)
 
+	// Dashboard endpoint (redirect to dedicated UI server)
+	s.router.GET("/dashboard", s.DashboardRedirect)
+
 	// Models endpoint
 	s.router.GET("/v1/models", s.ListModels)
 
