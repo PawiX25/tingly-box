@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .nav a.active {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        select {
+            padding: 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+            appearance: none;
+            padding-right: 30px;
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .search-box {
+            padding: 10px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            width: 250px;
+            font-size: 14px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .history-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+        }
+
+        .history-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .timestamp {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #666;
+            white-space: nowrap;
+        }
+
+        .action {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .message {
+            max-width: 400px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .details {
+            font-size: 0.9em;
+            color: #666;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #374151;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f3f4f6;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .export-menu {
+            position: relative;
+        }
+
+        .export-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+        }
+
+        .export-dropdown.show {
+            display: block;
+        }
+
+        .export-dropdown button {
+            display: block;
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .export-dropdown button:hover {
+            background: #f3f4f6;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .history-table {
+                font-size: 0.9em;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📜 Activity History</h1>
+            <div class="nav">
+                <a href="/ui/">Dashboard</a>
+                <a href="/ui/providers">Providers</a>
+                <a href="/ui/server">Server</a>
+                <a href="/ui/history" class="active">History</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="controls">
+                <div class="control-group">
+                    <input type="text" class="search-box" id="searchBox" placeholder="Search history...">
+                    <div class="select-wrapper">
+                        <select id="filterType">
+                            <option value="all">All Actions</option>
+                            <option value="start_server">Start Server</option>
+                            <option value="stop_server">Stop Server</option>
+                            <option value="restart_server">Restart Server</option>
+                            <option value="add_provider">Add Provider</option>
+                            <option value="delete_provider">Delete Provider</option>
+                            <option value="generate_token">Generate Token</option>
+                        </select>
+                    </div>
+                    <div class="select-wrapper">
+                        <select id="filterStatus">
+                            <option value="all">All Status</option>
+                            <option value="true">Success</option>
+                            <option value="false">Error</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <button class="btn btn-secondary" onclick="refreshHistory()">Refresh</button>
+                    <div class="export-menu">
+                        <button class="btn" onclick="toggleExportMenu()">Export ▼</button>
+                        <div class="export-dropdown" id="exportDropdown">
+                            <button onclick="exportJSON()">Export as JSON</button>
+                            <button onclick="exportCSV()">Export as CSV</button>
+                            <button onclick="exportTXT()">Export as TXT</button>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="clearHistory()">Clear All</button>
+                </div>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">Total Actions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="successCount">0</div>
+                    <div class="stat-label">Successful</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="errorCount">0</div>
+                    <div class="stat-label">Failed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayCount">0</div>
+                    <div class="stat-label">Today</div>
+                </div>
+            </div>
+
+            <div id="historyContent" class="loading">Loading history...</div>
+        </div>
+    </div>
+
+    <script>
+        let allHistory = [];
+        let filteredHistory = [];
+
+        // API helper functions
+        async function fetchAPI(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Load history
+        async function loadHistory() {
+            const historyContent = document.getElementById('historyContent');
+            const result = await fetchAPI('/api/history?limit=200');
+
+            if (result.success) {
+                allHistory = result.data;
+                applyFilters();
+                updateStats();
+            } else {
+                historyContent.innerHTML = `<div class="error">Failed to load history: ${result.error}</div>`;
+            }
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+            const filterType = document.getElementById('filterType').value;
+            const filterStatus = document.getElementById('filterStatus').value;
+
+            filteredHistory = allHistory.filter(entry => {
+                // Search filter
+                if (searchTerm && !entry.action.toLowerCase().includes(searchTerm) &&
+                    !entry.message.toLowerCase().includes(searchTerm)) {
+                    return false;
+                }
+
+                // Type filter
+                if (filterType !== 'all' && entry.action !== filterType) {
+                    return false;
+                }
+
+                // Status filter
+                if (filterStatus !== 'all' && entry.success.toString() !== filterStatus) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            renderHistory();
+        }
+
+        // Render history table
+        function renderHistory() {
+            const historyContent = document.getElementById('historyContent');
+
+            if (filteredHistory.length === 0) {
+                historyContent.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No History Found</h3>
+                        <p>No activity history matches your current filters.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHTML = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Action</th>
+                            <th>Status</th>
+                            <th>Message</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredHistory.map(entry => `
+                            <tr>
+                                <td class="timestamp">${new Date(entry.timestamp).toLocaleString()}</td>
+                                <td class="action">${formatAction(entry.action)}</td>
+                                <td>
+                                    <span class="status ${entry.success ? 'status-success' : 'status-error'}">
+                                        ${entry.success ? 'Success' : 'Error'}
+                                    </span>
+                                </td>
+                                <td class="message" title="${entry.message}">${entry.message}</td>
+                                <td class="details" title="${formatDetails(entry.details)}">
+                                    ${formatDetails(entry.details)}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            historyContent.innerHTML = tableHTML;
+        }
+
+        // Format action name
+        function formatAction(action) {
+            return action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+
+        // Format details
+        function formatDetails(details) {
+            if (!details) return 'N/A';
+            if (typeof details === 'string') return details;
+            return Object.entries(details).map(([k, v]) => `${k}: ${v}`).join(', ');
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalCount = allHistory.length;
+            const successCount = allHistory.filter(entry => entry.success).length;
+            const errorCount = totalCount - successCount;
+
+            const today = new Date().toDateString();
+            const todayCount = allHistory.filter(entry =>
+                new Date(entry.timestamp).toDateString() === today
+            ).length;
+
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('successCount').textContent = successCount;
+            document.getElementById('errorCount').textContent = errorCount;
+            document.getElementById('todayCount').textContent = todayCount;
+        }
+
+        // Event listeners
+        document.getElementById('searchBox').addEventListener('input', applyFilters);
+        document.getElementById('filterType').addEventListener('change', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+        // Control functions
+        function refreshHistory() {
+            loadHistory();
+        }
+
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
+                // This would need to be implemented on the backend
+                alert('Clear history functionality not yet implemented');
+            }
+        }
+
+        function toggleExportMenu() {
+            const dropdown = document.getElementById('exportDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function exportJSON() {
+            const dataStr = JSON.stringify(filteredHistory, null, 2);
+            downloadFile('history.json', dataStr, 'application/json');
+            toggleExportMenu();
+        }
+
+        function exportCSV() {
+            const headers = ['Timestamp', 'Action', 'Success', 'Message', 'Details'];
+            const csvContent = [
+                headers.join(','),
+                ...filteredHistory.map(entry => [
+                    new Date(entry.timestamp).toISOString(),
+                    entry.action,
+                    entry.success,
+                    `"${entry.message.replace(/"/g, '""')}"`,
+                    `"${formatDetails(entry.details).replace(/"/g, '""')}"`
+                ].join(','))
+            ].join('\n');
+
+            downloadFile('history.csv', csvContent, 'text/csv');
+            toggleExportMenu();
+        }
+
+        function exportTXT() {
+            const txtContent = filteredHistory.map(entry =>
+                `[${new Date(entry.timestamp).toLocaleString()}] ${entry.success ? '✅' : '❌'} ${entry.action}: ${entry.message}`
+            ).join('\n');
+
+            downloadFile('history.txt', txtContent, 'text/plain');
+            toggleExportMenu();
+        }
+
+        function downloadFile(filename, content, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Close export menu when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.export-menu')) {
+                document.getElementById('exportDropdown').classList.remove('show');
+            }
+        });
+
+        // Load initial data
+        loadHistory();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadHistory, 30000);
+    </script>
+</body>
+</html>

@@ -69,17 +69,17 @@ func (wui *WebUI) setupRoutes() {
 	wui.router.Static("/static", staticPath)
 
 	// Dashboard endpoints
-	wui.router.GET("/", wui.dashboard)
-	wui.router.GET("/dashboard", wui.dashboard)
+	wui.router.GET("/", wui.Dashboard)
+	wui.router.GET("/dashboard", wui.Dashboard)
 
 	// UI page routes
 	ui := wui.router.Group("/ui")
 	{
-		ui.GET("/", wui.dashboard)
-		ui.GET("/dashboard", wui.dashboard)
-		ui.GET("/providers", wui.providersPage)
-		ui.GET("/server", wui.serverPage)
-		ui.GET("/history", wui.historyPage)
+		ui.GET("/", wui.Dashboard)
+		ui.GET("/dashboard", wui.Dashboard)
+		ui.GET("/providers", wui.ProvidersPage)
+		ui.GET("/server", wui.ServerPage)
+		ui.GET("/history", wui.HistoryPage)
 	}
 
 	// API routes (for web UI functionality)
@@ -95,27 +95,27 @@ func (wui *WebUI) setupAPIRoutes() {
 	api := wui.router.Group("/api")
 	{
 		// Providers management
-		api.GET("/providers", wui.getProviders)
-		api.POST("/providers", wui.addProvider)
-		api.DELETE("/providers/:name", wui.deleteProvider)
+		api.GET("/providers", wui.GetProviders)
+		api.POST("/providers", wui.AddProvider)
+		api.DELETE("/providers/:name", wui.DeleteProvider)
 
 		// Server management
-		api.GET("/status", wui.getStatus)
-		api.POST("/server/start", wui.startServer)
-		api.POST("/server/stop", wui.stopServer)
-		api.POST("/server/restart", wui.restartServer)
+		api.GET("/status", wui.GetStatus)
+		api.POST("/server/start", wui.StartServer)
+		api.POST("/server/stop", wui.StopServer)
+		api.POST("/server/restart", wui.RestartServer)
 
 		// Token generation
-		api.GET("/token", wui.generateToken)
+		api.GET("/token", wui.GenerateToken)
 
 		// History
-		api.GET("/history", wui.getHistory)
+		api.GET("/history", wui.GetHistory)
 
 		// New API endpoints for defaults and provider models
-		api.GET("/defaults", wui.getDefaults)
-		api.POST("/defaults", wui.setDefaults)
-		api.GET("/provider-models", wui.getProviderModels)
-		api.POST("/provider-models/:name", wui.fetchProviderModels)
+		api.GET("/defaults", wui.GetDefaults)
+		api.POST("/defaults", wui.SetDefaults)
+		api.GET("/provider-models", wui.GetProviderModels)
+		api.POST("/provider-models/:name", wui.FetchProviderModels)
 	}
 }
 
@@ -148,44 +148,44 @@ func (wui *WebUI) SetupRoutesOnServer(mainRouter *gin.Engine) {
 	mainRouter.Static("/static", staticPath)
 
 	// Add dashboard routes to main router
-	mainRouter.GET("/", wui.dashboard)
-	mainRouter.GET("/dashboard", wui.dashboard)
+	mainRouter.GET("/", wui.Dashboard)
+	mainRouter.GET("/dashboard", wui.Dashboard)
 
 	// UI page routes on main router
 	ui := mainRouter.Group("/ui")
 	{
-		ui.GET("/", wui.dashboard)
-		ui.GET("/dashboard", wui.dashboard)
-		ui.GET("/providers", wui.providersPage)
-		ui.GET("/server", wui.serverPage)
-		ui.GET("/history", wui.historyPage)
+		ui.GET("/", wui.Dashboard)
+		ui.GET("/dashboard", wui.Dashboard)
+		ui.GET("/providers", wui.ProvidersPage)
+		ui.GET("/server", wui.ServerPage)
+		ui.GET("/history", wui.HistoryPage)
 	}
 
 	// Add API routes for web UI functionality on main router
 	api := mainRouter.Group("/api")
 	{
 		// Providers management
-		api.GET("/providers", wui.getProviders)
-		api.POST("/providers", wui.addProvider)
-		api.DELETE("/providers/:name", wui.deleteProvider)
+		api.GET("/providers", wui.GetProviders)
+		api.POST("/providers", wui.AddProvider)
+		api.DELETE("/providers/:name", wui.DeleteProvider)
 
 		// Server management
-		api.GET("/status", wui.getStatus)
-		api.POST("/server/start", wui.startServer)
-		api.POST("/server/stop", wui.stopServer)
-		api.POST("/server/restart", wui.restartServer)
+		api.GET("/status", wui.GetStatus)
+		api.POST("/server/start", wui.StartServer)
+		api.POST("/server/stop", wui.StopServer)
+		api.POST("/server/restart", wui.RestartServer)
 
 		// Token generation
-		api.GET("/token", wui.generateToken)
+		api.GET("/token", wui.GenerateToken)
 
 		// History
-		api.GET("/history", wui.getHistory)
+		api.GET("/history", wui.GetHistory)
 
 		// Defaults and provider models
-		api.GET("/defaults", wui.getDefaults)
-		api.POST("/defaults", wui.setDefaults)
-		api.GET("/provider-models", wui.getProviderModels)
-		api.POST("/provider-models/:name", wui.fetchProviderModels)
+		api.GET("/defaults", wui.GetDefaults)
+		api.POST("/defaults", wui.SetDefaults)
+		api.GET("/provider-models", wui.GetProviderModels)
+		api.POST("/provider-models/:name", wui.FetchProviderModels)
 	}
 }
 
@@ -217,23 +217,6 @@ func (wui *WebUI) HistoryPage(c *gin.Context) {
 	c.HTML(http.StatusOK, "history.html", gin.H{
 		"title": "History - Tingly Box",
 	})
-}
-
-// Internal page handlers (unexported for internal use)
-func (wui *WebUI) dashboard(c *gin.Context) {
-	wui.Dashboard(c)
-}
-
-func (wui *WebUI) providersPage(c *gin.Context) {
-	wui.ProvidersPage(c)
-}
-
-func (wui *WebUI) serverPage(c *gin.Context) {
-	wui.ServerPage(c)
-}
-
-func (wui *WebUI) historyPage(c *gin.Context) {
-	wui.HistoryPage(c)
 }
 
 // API Handlers (exported for server integration)
@@ -283,26 +266,23 @@ func (wui *WebUI) GetHistory(c *gin.Context) {
 
 func (wui *WebUI) GetDefaults(c *gin.Context) {
 	globalConfig := wui.config.GetGlobalConfig()
-	if globalConfig != nil {
-		defaultProvider, defaultModel := globalConfig.GetDefaultProvider(), globalConfig.GetDefaultModel()
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"data": gin.H{
-				"default_provider":   defaultProvider,
-				"default_model":      defaultModel,
-				"default_model_name": globalConfig.DefaultModelName,
-			},
+	if globalConfig == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Global config not available",
 		})
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"data": gin.H{
-				"default_provider":   "",
-				"default_model":      "",
-				"default_model_name": "tingly",
-			},
-		})
+		return
 	}
+
+	defaultProvider, defaultModel, defaultModelName := globalConfig.GetDefaults()
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data": gin.H{
+			"defaultProvider":  defaultProvider,
+			"defaultModel":     defaultModel,
+			"defaultModelName": defaultModelName,
+		},
+	})
 }
 
 // Placeholder implementations for complex handlers
@@ -348,148 +328,11 @@ func (wui *WebUI) GenerateToken(c *gin.Context) {
 	})
 }
 
-// getProviderModels returns provider models information
-func (ws *WebUI) getProviderModels(c *gin.Context) {
-	providerModelManager := ws.config.GetProviderModelManager()
-	if providerModelManager == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   "Provider model manager not available",
-		})
-		return
-	}
-
-	providers := providerModelManager.GetAllProviders()
-	providerModels := make(map[string]interface{})
-
-	for _, providerName := range providers {
-		models := providerModelManager.GetModels(providerName)
-		apiBase, lastUpdated, _ := providerModelManager.GetProviderInfo(providerName)
-
-		providerModels[providerName] = map[string]interface{}{
-			"models":       models,
-			"api_base":     apiBase,
-			"last_updated": lastUpdated,
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    providerModels,
-	})
-}
-
-// fetchProviderModels fetches models for a specific provider
-func (ws *WebUI) fetchProviderModels(c *gin.Context) {
-	providerName := c.Param("name")
-
-	if providerName == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error":   "Provider name is required",
-		})
-		return
-	}
-
-	// Fetch and save models
-	err := ws.config.FetchAndSaveProviderModels(providerName)
-	if err != nil {
-		if ws.logger != nil {
-			ws.logger.LogAction(memory.ActionFetchModels, map[string]interface{}{
-				"provider": providerName,
-			}, false, err.Error())
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   err.Error(),
-		})
-		return
-	}
-
-	// Get the updated models
-	providerModelManager := ws.config.GetProviderModelManager()
-	models := providerModelManager.GetModels(providerName)
-
-	if ws.logger != nil {
-		ws.logger.LogAction(memory.ActionFetchModels, map[string]interface{}{
-			"provider":     providerName,
-			"models_count": len(models),
-		}, true, fmt.Sprintf("Successfully fetched %d models for provider %s", len(models), providerName))
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": fmt.Sprintf("Successfully fetched %d models for provider %s", len(models), providerName),
-		"data":    models,
-	})
-}
-
-// Internal API handlers (unexported for internal use)
-func (wui *WebUI) getProviders(c *gin.Context) {
-	wui.GetProviders(c)
-}
-
-func (wui *WebUI) getStatus(c *gin.Context) {
-	wui.GetStatus(c)
-}
-
-func (wui *WebUI) getHistory(c *gin.Context) {
-	wui.GetHistory(c)
-}
-
-func (wui *WebUI) addProvider(c *gin.Context) {
-	wui.AddProvider(c)
-}
-
-func (wui *WebUI) deleteProvider(c *gin.Context) {
-	wui.DeleteProvider(c)
-}
-
-func (wui *WebUI) startServer(c *gin.Context) {
-	wui.StartServer(c)
-}
-
-func (wui *WebUI) stopServer(c *gin.Context) {
-	wui.StopServer(c)
-}
-
-func (wui *WebUI) restartServer(c *gin.Context) {
-	wui.RestartServer(c)
-}
-
-func (wui *WebUI) generateToken(c *gin.Context) {
-	wui.GenerateToken(c)
-}
-
-// getDefaults returns the current global defaults
-func (ws *WebUI) getDefaults(c *gin.Context) {
-	globalConfig := ws.config.GetGlobalConfig()
-	if globalConfig == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error":   "Global config not available",
-		})
-		return
-	}
-
-	defaultProvider, defaultModel, defaultModelName := globalConfig.GetDefaults()
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data": gin.H{
-			"default_provider":   defaultProvider,
-			"default_model":      defaultModel,
-			"default_model_name": defaultModelName,
-		},
-	})
-}
-
-// setDefaults updates the global defaults
-func (ws *WebUI) setDefaults(c *gin.Context) {
+func (wui *WebUI) SetDefaults(c *gin.Context) {
 	var req struct {
-		DefaultProvider  string `json:"default_provider"`
-		DefaultModel     string `json:"default_model"`
-		DefaultModelName string `json:"default_model_name"`
+		DefaultProvider  string `json:"defaultProvider"`
+		DefaultModel     string `json:"defaultModel"`
+		DefaultModelName string `json:"defaultModelName"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -500,7 +343,7 @@ func (ws *WebUI) setDefaults(c *gin.Context) {
 		return
 	}
 
-	globalConfig := ws.config.GetGlobalConfig()
+	globalConfig := wui.config.GetGlobalConfig()
 	if globalConfig == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -540,8 +383,8 @@ func (ws *WebUI) setDefaults(c *gin.Context) {
 		}
 	}
 
-	if ws.logger != nil {
-		ws.logger.LogAction(memory.ActionUpdateDefaults, map[string]interface{}{
+	if wui.logger != nil {
+		wui.logger.LogAction(memory.ActionUpdateDefaults, map[string]interface{}{
 			"default_provider":   req.DefaultProvider,
 			"default_model":      req.DefaultModel,
 			"default_model_name": req.DefaultModelName,
@@ -551,6 +394,81 @@ func (ws *WebUI) setDefaults(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"message": "Defaults updated successfully",
+	})
+}
+
+func (wui *WebUI) FetchProviderModels(c *gin.Context) {
+	providerName := c.Param("name")
+
+	if providerName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Provider name is required",
+		})
+		return
+	}
+
+	// Fetch and save models
+	err := wui.config.FetchAndSaveProviderModels(providerName)
+	if err != nil {
+		if wui.logger != nil {
+			wui.logger.LogAction(memory.ActionFetchModels, map[string]interface{}{
+				"provider": providerName,
+			}, false, err.Error())
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// Get the updated models
+	providerModelManager := wui.config.GetProviderModelManager()
+	models := providerModelManager.GetModels(providerName)
+
+	if wui.logger != nil {
+		wui.logger.LogAction(memory.ActionFetchModels, map[string]interface{}{
+			"provider":     providerName,
+			"models_count": len(models),
+		}, true, fmt.Sprintf("Successfully fetched %d models for provider %s", len(models), providerName))
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": fmt.Sprintf("Successfully fetched %d models for provider %s", len(models), providerName),
+		"data":    models,
+	})
+}
+
+func (wui *WebUI) GetProviderModels(c *gin.Context) {
+	providerModelManager := wui.config.GetProviderModelManager()
+	if providerModelManager == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error":   "Provider model manager not available",
+		})
+		return
+	}
+
+	providers := providerModelManager.GetAllProviders()
+	providerModels := make(map[string]interface{})
+
+	for _, providerName := range providers {
+		models := providerModelManager.GetModels(providerName)
+		apiBase, lastUpdated, _ := providerModelManager.GetProviderInfo(providerName)
+
+		providerModels[providerName] = map[string]interface{}{
+			"models":       models,
+			"api_base":     apiBase,
+			"last_updated": lastUpdated,
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    providerModels,
 	})
 }
 

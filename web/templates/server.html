@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .nav a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .nav a.active {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .status-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 12px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-running {
+            background-color: #10b981;
+        }
+
+        .status-stopped {
+            background-color: #ef4444;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .log-container {
+            grid-column: 1 / -1;
+        }
+
+        .log-viewer {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-timestamp {
+            color: #858585;
+        }
+
+        .log-level-info {
+            color: #4fc3f7;
+        }
+
+        .log-level-error {
+            color: #f48fb1;
+        }
+
+        .log-level-success {
+            color: #81c784;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #ef4444;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #fecaca;
+        }
+
+        .success {
+            background: #f0fdf4;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .config-section {
+            margin-top: 20px;
+        }
+
+        .config-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .config-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .config-value {
+            color: #666;
+            font-family: monospace;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Server Management</h1>
+            <div class="nav">
+                <a href="/ui/">Dashboard</a>
+                <a href="/ui/providers">Providers</a>
+                <a href="/ui/server" class="active">Server</a>
+                <a href="/ui/history">History</a>
+            </div>
+        </div>
+
+        <div id="messageArea"></div>
+
+        <div class="main-content">
+            <!-- Server Status Card -->
+            <div class="card">
+                <h2>📊 Server Status</h2>
+                <div id="serverStatus" class="loading">Loading server status...</div>
+                <div class="btn-group">
+                    <button id="startBtn" class="btn btn-success" onclick="startServer()">Start</button>
+                    <button id="stopBtn" class="btn btn-danger" onclick="stopServer()">Stop</button>
+                    <button id="restartBtn" class="btn" onclick="restartServer()">Restart</button>
+                </div>
+            </div>
+
+            <!-- Configuration Card -->
+            <div class="card">
+                <h2>⚙️ Configuration</h2>
+                <div id="serverConfig" class="loading">Loading configuration...</div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="refreshStatus()">Refresh</button>
+                    <button class="btn" onclick="generateToken()">Generate Token</button>
+                </div>
+            </div>
+
+            <!-- Activity Log Card -->
+            <div class="card log-container">
+                <h2>📜 Recent Activity</h2>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="loadHistory()">Refresh Log</button>
+                    <button class="btn btn-secondary" onclick="clearLog()">Clear Log</button>
+                </div>
+                <div id="activityLog" class="log-viewer">Loading activity log...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API helper functions
+        async function fetchAPI(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const messageArea = document.getElementById('messageArea');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            messageDiv.style.marginBottom = '20px';
+
+            messageArea.innerHTML = '';
+            messageArea.appendChild(messageDiv);
+
+            setTimeout(() => messageDiv.remove(), 5000);
+        }
+
+        // Load server status
+        async function loadServerStatus() {
+            const statusDiv = document.getElementById('serverStatus');
+            const configDiv = document.getElementById('serverConfig');
+            const result = await fetchAPI('/api/status');
+
+            if (result.success) {
+                const data = result.data;
+                const isRunning = data.server_running;
+
+                // Update status display
+                const statusClass = isRunning ? 'status-running' : 'status-stopped';
+                const statusText = isRunning ? 'Running' : 'Stopped';
+
+                statusDiv.innerHTML = `
+                    <div class="status">
+                        <div class="status-indicator ${statusClass}"></div>
+                        <strong>Status:</strong> ${statusText}
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Port:</span>
+                        <span class="stat-value">${data.port}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Providers:</span>
+                        <span class="stat-value">${data.providers_enabled}/${data.providers_total}</span>
+                    </div>
+                    ${data.uptime ? `<div class="stat">
+                        <span class="stat-label">Uptime:</span>
+                        <span class="stat-value">${data.uptime}</span>
+                    </div>` : ''}
+                    ${data.last_updated ? `<div class="stat">
+                        <span class="stat-label">Last Updated:</span>
+                        <span class="stat-value">${data.last_updated}</span>
+                    </div>` : ''}
+                    ${data.request_count !== undefined ? `<div class="stat">
+                        <span class="stat-label">Request Count:</span>
+                        <span class="stat-value">${data.request_count}</span>
+                    </div>` : ''}
+                `;
+
+                // Update configuration display
+                configDiv.innerHTML = `
+                    <div class="config-section">
+                        <div class="config-item">
+                            <div class="config-label">Server Port</div>
+                            <div class="config-value">${data.port}</div>
+                        </div>
+                        <div class="config-item">
+                            <div class="config-label">Enabled Providers</div>
+                            <div class="config-value">${data.providers_enabled} of ${data.providers_total}</div>
+                        </div>
+                        ${data.action_stats ? `
+                            <div class="config-item">
+                                <div class="config-label">Total Actions</div>
+                                <div class="config-value">${Object.values(data.action_stats).reduce((a, b) => a + b, 0)}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                // Update button states
+                document.getElementById('startBtn').disabled = isRunning;
+                document.getElementById('stopBtn').disabled = !isRunning;
+            } else {
+                statusDiv.innerHTML = `<div class="error">Failed to load server status</div>`;
+                configDiv.innerHTML = `<div class="error">Failed to load configuration</div>`;
+            }
+        }
+
+        // Load activity log
+        async function loadHistory() {
+            const logDiv = document.getElementById('activityLog');
+            const result = await fetchAPI('/api/history?limit=50');
+
+            if (result.success) {
+                const history = result.data;
+                if (history.length === 0) {
+                    logDiv.innerHTML = '<div class="log-entry">No recent activity</div>';
+                } else {
+                    logDiv.innerHTML = history.map(entry => {
+                        const timestamp = new Date(entry.timestamp).toLocaleString();
+                        const levelClass = entry.success ? 'log-level-success' : 'log-level-error';
+                        return `<div class="log-entry">
+                            <span class="log-timestamp">[${timestamp}]</span>
+                            <span class="${levelClass}">${entry.success ? '✅' : '❌'}</span>
+                            ${entry.action}: ${entry.message}
+                        </div>`;
+                    }).join('');
+                }
+            } else {
+                logDiv.innerHTML = '<div class="log-entry log-level-error">Failed to load activity log</div>';
+            }
+        }
+
+        // Server control functions
+        async function startServer() {
+            const port = prompt('Enter port for server (8080):', '8080');
+            if (port) {
+                const result = await fetchAPI('/api/server/start', {
+                    method: 'POST',
+                    body: JSON.stringify({ port: parseInt(port) })
+                });
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    setTimeout(() => {
+                        loadServerStatus();
+                        loadHistory();
+                    }, 1000);
+                } else {
+                    showMessage(result.error, 'error');
+                }
+            }
+        }
+
+        async function stopServer() {
+            if (confirm('Are you sure you want to stop the server?')) {
+                const result = await fetchAPI('/api/server/stop', { method: 'POST' });
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    setTimeout(() => {
+                        loadServerStatus();
+                        loadHistory();
+                    }, 1000);
+                } else {
+                    showMessage(result.error, 'error');
+                }
+            }
+        }
+
+        async function restartServer() {
+            const port = prompt('Enter port for server (8080):', '8080');
+            if (port) {
+                const result = await fetchAPI('/api/server/restart', {
+                    method: 'POST',
+                    body: JSON.stringify({ port: parseInt(port) })
+                });
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    setTimeout(() => {
+                        loadServerStatus();
+                        loadHistory();
+                    }, 1000);
+                } else {
+                    showMessage(result.error, 'error');
+                }
+            }
+        }
+
+        async function generateToken() {
+            const clientId = prompt('Enter client ID (web):', 'web');
+            if (clientId) {
+                const result = await fetchAPI(`/api/token?client_id=${encodeURIComponent(clientId)}`);
+                if (result.success) {
+                    // Copy token to clipboard
+                    navigator.clipboard.writeText(result.data.token).then(() => {
+                        showMessage('Token copied to clipboard!', 'success');
+                    }).catch(() => {
+                        showMessage('Token generated successfully (could not copy to clipboard)', 'success');
+                    });
+                    loadHistory();
+                } else {
+                    showMessage(result.error, 'error');
+                }
+            }
+        }
+
+        function refreshStatus() {
+            loadServerStatus();
+            showMessage('Status refreshed', 'success');
+        }
+
+        function clearLog() {
+            document.getElementById('activityLog').innerHTML = '<div class="log-entry">Log cleared</div>';
+        }
+
+        // Load initial data
+        loadServerStatus();
+        loadHistory();
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadServerStatus();
+        }, 30000);
+
+        // Auto-refresh log every 10 seconds
+        setInterval(() => {
+            loadHistory();
+        }, 10000);
+    </script>
+</body>
+</html>
