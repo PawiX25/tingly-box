@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/spf13/cobra"
 	"tingly-box/internal/cli"
 	"tingly-box/internal/config"
+
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
@@ -38,7 +39,7 @@ func init() {
 	rootCmd.AddCommand(cli.StatusCommand(appConfig))
 	rootCmd.AddCommand(cli.TokenCommand(appConfig))
 	rootCmd.AddCommand(cli.ExampleCommand(appConfig))
-	rootCmd.AddCommand(cli.InteractiveCommand(appConfig))
+	rootCmd.AddCommand(cli.ShellCommand(appConfig))
 }
 
 func main() {

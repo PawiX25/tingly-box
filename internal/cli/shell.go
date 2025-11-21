@@ -16,8 +16,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// InteractiveCommand represents the interactive CLI command
-func InteractiveCommand(appConfig *config.AppConfig) *cobra.Command {
+// ShellCommand represents the interactive CLI command
+func ShellCommand(appConfig *config.AppConfig) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "shell",
 		Short: "Enter shell interactive mode for managing Tingly Box",

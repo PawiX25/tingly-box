@@ -2,11 +2,8 @@ package config
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/goccy/go-yaml"
 )
 
 // ModelConfig represents the model configuration structure
@@ -27,9 +24,9 @@ type ModelDefinition struct {
 
 // ModelManager manages model configuration and matching
 type ModelManager struct {
-	config    ModelConfig
-	modelMap  map[string]*ModelDefinition // name -> model definition
-	aliasMap  map[string]*ModelDefinition // alias -> model definition
+	config     ModelConfig
+	modelMap   map[string]*ModelDefinition // name -> model definition
+	aliasMap   map[string]*ModelDefinition // alias -> model definition
 	configFile string
 }
 
@@ -37,8 +34,8 @@ type ModelManager struct {
 func NewModelManager() (*ModelManager, error) {
 	mm := &ModelManager{
 		configFile: filepath.Join("config", "model.yaml"),
-		modelMap:  make(map[string]*ModelDefinition),
-		aliasMap:  make(map[string]*ModelDefinition),
+		modelMap:   make(map[string]*ModelDefinition),
+		aliasMap:   make(map[string]*ModelDefinition),
 	}
 
 	if err := mm.loadConfig(); err != nil {
@@ -50,93 +47,11 @@ func NewModelManager() (*ModelManager, error) {
 
 // loadConfig loads the model configuration from YAML file
 func (mm *ModelManager) loadConfig() error {
-	// Create default config if file doesn't exist
-	if _, err := os.Stat(mm.configFile); os.IsNotExist(err) {
-		if err := mm.createDefaultConfig(); err != nil {
-			return fmt.Errorf("failed to create default config: %w", err)
-		}
-	}
-
-	data, err := os.ReadFile(mm.configFile)
-	if err != nil {
-		return fmt.Errorf("failed to read config file: %w", err)
-	}
-
-	if err := yaml.Unmarshal(data, &mm.config); err != nil {
-		return fmt.Errorf("failed to parse config: %w", err)
-	}
 
 	// Build maps for fast lookup
 	mm.buildMaps()
 
 	return nil
-}
-
-// createDefaultConfig creates a default model configuration file
-func (mm *ModelManager) createDefaultConfig() error {
-	// Create config directory
-	configDir := filepath.Dir(mm.configFile)
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		return fmt.Errorf("failed to create config directory: %w", err)
-	}
-
-	// Default models configuration
-	defaultConfig := ModelConfig{
-		Models: []ModelDefinition{
-			{
-				Name:        "gpt-3.5-turbo",
-				Provider:    "openai",
-				APIBase:     "https://api.openai.com/v1",
-				Model:       "gpt-3.5-turbo",
-				Aliases:     []string{"chatgpt", "gpt35"},
-				Description: "OpenAI GPT-3.5 Turbo model",
-				Category:    "chat",
-			},
-			{
-				Name:        "gpt-4",
-				Provider:    "openai",
-				APIBase:     "https://api.openai.com/v1",
-				Model:       "gpt-4",
-				Aliases:     []string{"gpt4"},
-				Description: "OpenAI GPT-4 model",
-				Category:    "chat",
-			},
-			{
-				Name:        "qwen-plus",
-				Provider:    "alibaba",
-				APIBase:     "https://dashscope.aliyuncs.com/compatible-mode/v1",
-				Model:       "qwen-plus",
-				Aliases:     []string{"qwen", "tongyi"},
-				Description: "Alibaba Qwen Plus model",
-				Category:    "chat",
-			},
-			{
-				Name:        "qwen-turbo",
-				Provider:    "alibaba",
-				APIBase:     "https://dashscope.aliyuncs.com/compatible-mode/v1",
-				Model:       "qwen-turbo",
-				Aliases:     []string{"qwen-fast"},
-				Description: "Alibaba Qwen Turbo model",
-				Category:    "chat",
-			},
-			{
-				Name:        "claude-3-sonnet",
-				Provider:    "anthropic",
-				APIBase:     "https://api.anthropic.com",
-				Model:       "claude-3-sonnet-20240229",
-				Aliases:     []string{"claude-sonnet", "claude3"},
-				Description: "Anthropic Claude 3 Sonnet model",
-				Category:    "chat",
-			},
-		},
-	}
-
-	data, err := yaml.Marshal(defaultConfig)
-	if err != nil {
-		return fmt.Errorf("failed to marshal default config: %w", err)
-	}
-
-	return os.WriteFile(mm.configFile, data, 0644)
 }
 
 // buildMaps creates lookup maps for model names and aliases

@@ -543,20 +543,3 @@ func (s *Server) determineProviderFallback(model string) (*config.Provider, erro
 
 	return nil, fmt.Errorf("no enabled providers available")
 }
-
-// DashboardRedirect redirects to the dedicated UI server
-func (s *Server) DashboardRedirect(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "Tingly Box Dashboard",
-		"note":    "Use 'tingly ui' command to launch the web dashboard",
-		"command": "tingly ui --port 8081",
-		"ui_urls": map[string]string{
-			"root":      "http://localhost:8081/",
-			"dashboard": "http://localhost:8081/",
-			"ui_root":   "http://localhost:8081/ui/",
-			"providers": "http://localhost:8081/ui/providers",
-			"server":    "http://localhost:8081/ui/server",
-			"history":   "http://localhost:8081/ui/history",
-		},
-	})
-}
