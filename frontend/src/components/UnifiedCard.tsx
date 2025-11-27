@@ -7,7 +7,7 @@ interface UnifiedCardProps {
   subtitle?: string;
   children: ReactNode;
   // 格子倍数配置：widthUnits × heightUnits
-  size?: 'small' | 'medium' | 'large' | 'full';
+  size?: 'small' | 'medium' | 'large' | 'full' | 'fullw';
   variant?: 'default' | 'outlined' | 'elevated';
   // 自定义格子倍数
   gridUnits?: {
@@ -20,35 +20,43 @@ interface UnifiedCardProps {
 // 基本格子尺寸单位（像素）
 const BASE_UNIT = 40;
 
-// 预设的格子倍数系统
+// 预设的格子倍数系统 - 使用最小高度而不是固定高度
 const presetCardDimensions = {
   small: {
-    widthUnits: 8,  // 240px
-    heightUnits: 10, // 160px
+    widthUnits: 8,  // 320px
+    minHeightUnits: 6, // 最小高度 240px
   },
   medium: {
-    widthUnits: 8,  // 240px
-    heightUnits: 10, // 280px
+    widthUnits: 8,  // 320px
+    minHeightUnits: 8, // 最小高度 320px
   },
   large: {
-    widthUnits: 13,  // 320px
-    heightUnits: 13, // 360px
+    widthUnits: 12,  // 520px
+    minHeightUnits: 10, // 最小高度 400px
   },
   full: {
-    widthUnits: 13, // 480px
-    heightUnits: 13, // 480px
+    widthUnits: 12, // 520px
+    minHeightUnits: 12, // 最小高度 480px
   },
+  fullw:{
+        widthUnits: 28, // 520px
+    minHeightUnits: 12, // 最小高度 480px
+  }
 };
 
 // 计算卡片尺寸的函数
 const getCardDimensions = (size: 'small' | 'medium' | 'large' | 'full', customGridUnits?: { widthUnits?: number; heightUnits?: number }) => {
-  const dimensions = customGridUnits || presetCardDimensions[size];
-  const width = dimensions.widthUnits * BASE_UNIT;
-  const height = dimensions.heightUnits * BASE_UNIT;
+  const preset = presetCardDimensions[size];
+  const width = (customGridUnits?.widthUnits || preset.widthUnits) * BASE_UNIT;
+
+  // 如果有自定义高度，使用自定义高度，否则使用最小高度
+  const height = customGridUnits?.heightUnits
+    ? customGridUnits.heightUnits * BASE_UNIT
+    : preset.minHeightUnits * BASE_UNIT;
 
   return {
     width,
-    height,
+    height: height,
     display: 'flex',
     flexDirection: 'column' as const,
   };
@@ -94,7 +102,6 @@ export const UnifiedCard = ({
     >
       <CardContent
         sx={{
-          flex: 1,
           display: 'flex',
           flexDirection: 'column',
           p: 3,
@@ -103,7 +110,7 @@ export const UnifiedCard = ({
         }}
       >
         {title && (
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mb: 2, flexShrink: 0 }}>
             <Typography variant="h4" sx={{ fontWeight: 600, color: 'text.primary', mb: subtitle ? 1 : 0 }}>
               {title}
             </Typography>
@@ -114,7 +121,7 @@ export const UnifiedCard = ({
             )}
           </Box>
         )}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
           {children}
         </Box>
       </CardContent>

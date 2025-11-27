@@ -8,9 +8,9 @@ import {
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { api } from '../services/api';
-import UnifiedCard from '../components/UnifiedCard';
 import CardGrid, { CardGridItem } from '../components/CardGrid';
+import UnifiedCard from '../components/UnifiedCard';
+import { api } from '../services/api';
 
 const Server = () => {
     const [serverStatus, setServerStatus] = useState<any>(null);
@@ -264,7 +264,7 @@ const Server = () => {
                     <UnifiedCard
                         title="Activity Log"
                         subtitle={`${activityLog.length} recent activity entries`}
-                        size="full"
+                        size="large"
                     >
                         <Stack spacing={1}>
                             <Stack direction="row" spacing={2}>

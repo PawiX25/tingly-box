@@ -21,9 +21,9 @@ import {
     Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { api } from '../services/api';
-import UnifiedCard from '../components/UnifiedCard';
 import CardGrid, { CardGridItem } from '../components/CardGrid';
+import UnifiedCard from '../components/UnifiedCard';
+import { api } from '../services/api';
 
 const History = () => {
     const [allHistory, setAllHistory] = useState<any[]>([]);
@@ -328,7 +328,7 @@ const History = () => {
                     <UnifiedCard
                         title="History Table"
                         subtitle={`${filteredHistory.length} filtered entries`}
-                        size="full"
+                        size="large"
                     >
                         <Stack spacing={1}>
                             <TableContainer component={Paper} sx={{ maxHeight: 280 }}>

@@ -191,7 +191,7 @@ const Layout = ({ children }: LayoutProps) => {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Proxy Management Dashboard
+              LLM Config & Proxy Management
             </Typography>
           </Box>
         </Box>

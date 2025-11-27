@@ -14,9 +14,9 @@ import {
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { api } from '../services/api';
-import UnifiedCard from '../components/UnifiedCard';
 import CardGrid, { CardGridItem } from '../components/CardGrid';
+import UnifiedCard from '../components/UnifiedCard';
+import { api } from '../services/api';
 
 const Dashboard = () => {
     const [serverStatus, setServerStatus] = useState<any>(null);
@@ -490,7 +490,7 @@ const Dashboard = () => {
                     <UnifiedCard
                         title="Authentication"
                         subtitle="Generate JWT token for API access"
-                        size="small"
+                        size="medium"
                     >
                         <Button variant="contained" onClick={handleGenerateToken}>
                             Generate Token
@@ -505,6 +505,12 @@ const Dashboard = () => {
                         subtitle="Latest system actions and events"
                         size="medium"
                     >
+                        <Button
+                            variant="outlined"
+                            onClick={() => window.location.href = '/history'}
+                        >
+                            View Full History
+                        </Button>      
                         <Stack spacing={1}>
                             <Box
                                 sx={{
@@ -531,12 +537,7 @@ const Dashboard = () => {
                                     <Typography color="text.secondary">No recent activity</Typography>
                                 )}
                             </Box>
-                            <Button
-                                variant="outlined"
-                                onClick={() => window.location.href = '/history'}
-                            >
-                                View Full History
-                            </Button>
+
                         </Stack>
                     </UnifiedCard>
                 </CardGridItem>

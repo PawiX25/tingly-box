@@ -17,9 +17,9 @@ import {
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { api } from '../services/api';
-import UnifiedCard from '../components/UnifiedCard';
 import CardGrid, { CardGridItem } from '../components/CardGrid';
+import UnifiedCard from '../components/UnifiedCard';
+import { api } from '../services/api';
 
 const Providers = () => {
     const [providers, setProviders] = useState<any[]>([]);
@@ -181,7 +181,7 @@ const Providers = () => {
                     <UnifiedCard
                         title="Current Providers"
                         subtitle={providers.length > 0 ? `Managing ${providers.length} provider(s)` : "No providers configured yet"}
-                        size="full"
+                        size="fullw"
                     >
                         {providers.length > 0 ? (
                             <Box sx={{ flex: 1, overflowY: 'auto', maxHeight: 380 }}>
