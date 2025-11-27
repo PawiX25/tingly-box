@@ -3,8 +3,6 @@ import {
     Alert,
     Box,
     Button,
-    Card,
-    CardContent,
     Chip,
     CircularProgress,
     Dialog,
@@ -12,7 +10,6 @@ import {
     DialogContent,
     DialogTitle,
     FormControlLabel,
-    Grid,
     IconButton,
     Stack,
     Switch,
@@ -21,6 +18,8 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
+import UnifiedCard from '../components/UnifiedCard';
+import CardGrid, { CardGridItem } from '../components/CardGrid';
 
 const Providers = () => {
     const [providers, setProviders] = useState<any[]>([]);
@@ -177,109 +176,116 @@ const Providers = () => {
                 </Alert>
             )}
 
-            <Card sx={{ mb: 3 }}>
-                <CardContent>
-                    <Typography variant="h2" gutterBottom>
-                        Current Providers
-                    </Typography>
-                    {providers.length > 0 ? (
-                        <Grid container spacing={2}>
-                            {providers.map((provider) => (
-                                <Grid item xs={12} key={provider.name}>
-                                    <Card
-                                        sx={{
-                                            borderLeft: 4,
-                                            borderColor: provider.enabled ? 'success.main' : 'error.main',
-                                            opacity: provider.enabled ? 1 : 0.7,
-                                        }}
-                                    >
-                                        <CardContent>
-                                            <Grid container spacing={2} alignItems="center">
-                                                <Grid item xs={12} md={3}>
+            <CardGrid>
+                <CardGridItem xs={12}>
+                    <UnifiedCard
+                        title="Current Providers"
+                        subtitle={providers.length > 0 ? `Managing ${providers.length} provider(s)` : "No providers configured yet"}
+                        size="full"
+                    >
+                        {providers.length > 0 ? (
+                            <Box sx={{ flex: 1, overflowY: 'auto', maxHeight: 380 }}>
+                                <Stack spacing={2}>
+                                    {providers.map((provider) => (
+                                        <Box
+                                            key={provider.name}
+                                            sx={{
+                                                border: 1,
+                                                borderLeft: 4,
+                                                borderColor: provider.enabled ? 'success.main' : 'error.main',
+                                                borderRadius: 2,
+                                                p: 2,
+                                                backgroundColor: 'background.paper',
+                                                opacity: provider.enabled ? 1 : 0.7,
+                                                transition: 'all 0.2s ease-in-out',
+                                                '&:hover': {
+                                                    boxShadow: 1,
+                                                }
+                                            }}
+                                        >
+                                            <Stack spacing={2}>
+                                                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }}>
                                                     <Stack direction="row" alignItems="center" spacing={1}>
-                                                        <Typography variant="h6">{provider.name}</Typography>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
+                                                            {provider.name}
+                                                        </Typography>
                                                         {provider.enabled ? (
-                                                            <CheckCircle color="success" />
+                                                            <CheckCircle color="success" fontSize="small" />
                                                         ) : (
-                                                            <Cancel color="error" />
+                                                            <Cancel color="error" fontSize="small" />
                                                         )}
+                                                        <Chip
+                                                            label={provider.enabled ? 'Enabled' : 'Disabled'}
+                                                            color={provider.enabled ? 'success' : 'error'}
+                                                            size="small"
+                                                        />
                                                     </Stack>
-                                                </Grid>
-                                                <Grid item xs={12} md={3}>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        API Base
-                                                    </Typography>
-                                                    <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                                                        {provider.api_base}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={12} md={2}>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Token
-                                                    </Typography>
-                                                    <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                                                        {provider.token}
-                                                    </Typography>
-                                                </Grid>
-                                                <Grid item xs={12} md={2}>
-                                                    <Chip
-                                                        label={provider.enabled ? 'Enabled' : 'Disabled'}
-                                                        color={provider.enabled ? 'success' : 'error'}
-                                                        size="small"
-                                                    />
-                                                </Grid>
-                                                <Grid item xs={12} md={2}>
                                                     <Stack direction="row" spacing={1}>
                                                         <IconButton
                                                             size="small"
                                                             color="primary"
                                                             onClick={() => handleEditProvider(provider.name)}
                                                         >
-                                                            <Edit />
+                                                            <Edit fontSize="small" />
                                                         </IconButton>
                                                         <IconButton
                                                             size="small"
                                                             color={provider.enabled ? 'warning' : 'success'}
                                                             onClick={() => handleToggleProvider(provider.name)}
                                                         >
-                                                            {provider.enabled ? <Cancel /> : <CheckCircle />}
+                                                            {provider.enabled ? <Cancel fontSize="small" /> : <CheckCircle fontSize="small" />}
                                                         </IconButton>
                                                         <IconButton
                                                             size="small"
                                                             color="error"
                                                             onClick={() => handleDeleteProvider(provider.name)}
                                                         >
-                                                            <Delete />
+                                                            <Delete fontSize="small" />
                                                         </IconButton>
                                                     </Stack>
-                                                </Grid>
-                                            </Grid>
-                                        </CardContent>
-                                    </Card>
-                                </Grid>
-                            ))}
-                        </Grid>
-                    ) : (
-                        <Box textAlign="center" py={5}>
-                            <Typography variant="h5" color="text.secondary" gutterBottom>
-                                No Providers Configured
-                            </Typography>
-                            <Typography color="text.secondary">
-                                Add your first AI provider using the form below to get started.
-                            </Typography>
-                        </Box>
-                    )}
-                </CardContent>
-            </Card>
+                                                </Stack>
+                                                <Box>
+                                                    <Typography variant="caption" color="text.secondary" gutterBottom>
+                                                        API Base
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', backgroundColor: 'grey.100', p: 0.5, borderRadius: 1, display: 'block', wordBreak: 'break-all' }}>
+                                                        {provider.api_base}
+                                                    </Typography>
+                                                </Box>
+                                                <Box>
+                                                    <Typography variant="caption" color="text.secondary" gutterBottom>
+                                                        API Token
+                                                    </Typography>
+                                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', backgroundColor: 'grey.100', p: 0.5, borderRadius: 1, display: 'block' }}>
+                                                        {provider.token ? `${provider.token.substring(0, 8)}...` : 'Not set'}
+                                                    </Typography>
+                                                </Box>
+                                            </Stack>
+                                        </Box>
+                                    ))}
+                                </Stack>
+                            </Box>
+                        ) : (
+                            <Box textAlign="center" py={5}>
+                                <Typography variant="h6" color="text.secondary" gutterBottom>
+                                    No Providers Configured
+                                </Typography>
+                                <Typography color="text.secondary">
+                                    Add your first AI provider using the form below to get started.
+                                </Typography>
+                            </Box>
+                        )}
+                    </UnifiedCard>
+                </CardGridItem>
 
-            <Card sx={{ bgcolor: 'info.light', border: 2, borderStyle: 'dashed', borderColor: 'info.main' }}>
-                <CardContent>
-                    <Typography variant="h2" gutterBottom>
-                        Add New Provider
-                    </Typography>
-                    <form onSubmit={handleAddProvider}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12} md={4}>
+                <CardGridItem xs={12}>
+                    <UnifiedCard
+                        title="Add New Provider"
+                        subtitle="Configure a new AI provider for your proxy"
+                        size="large"
+                    >
+                        <form onSubmit={handleAddProvider}>
+                            <Stack spacing={3}>
                                 <TextField
                                     fullWidth
                                     label="Provider Name"
@@ -288,8 +294,6 @@ const Providers = () => {
                                     required
                                     placeholder="e.g., openai, anthropic"
                                 />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
                                 <TextField
                                     fullWidth
                                     label="API Base URL"
@@ -298,8 +302,6 @@ const Providers = () => {
                                     required
                                     placeholder="e.g., https://api.openai.com/v1"
                                 />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
                                 <TextField
                                     fullWidth
                                     label="API Token"
@@ -309,8 +311,6 @@ const Providers = () => {
                                     required
                                     placeholder="Your API token"
                                 />
-                            </Grid>
-                            <Grid item xs={12}>
                                 <Stack direction="row" spacing={2}>
                                     <Button type="submit" variant="contained">
                                         Add Provider
@@ -326,11 +326,11 @@ const Providers = () => {
                                         Clear Form
                                     </Button>
                                 </Stack>
-                            </Grid>
-                        </Grid>
-                    </form>
-                </CardContent>
-            </Card>
+                            </Stack>
+                        </form>
+                    </UnifiedCard>
+                </CardGridItem>
+            </CardGrid>
 
             {/* Edit Dialog */}
             <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>

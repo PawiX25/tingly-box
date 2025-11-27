@@ -3,15 +3,14 @@ import {
     Alert,
     Box,
     Button,
-    Card,
-    CardContent,
     CircularProgress,
-    Grid,
     Stack,
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
+import UnifiedCard from '../components/UnifiedCard';
+import CardGrid, { CardGridItem } from '../components/CardGrid';
 
 const Server = () => {
     const [serverStatus, setServerStatus] = useState<any>(null);
@@ -141,145 +140,134 @@ const Server = () => {
                 </Alert>
             )}
 
-            <Grid container spacing={3}>
+            <CardGrid>
                 {/* Server Status */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                📊 Server Status
-                            </Typography>
-                            {serverStatus ? (
-                                <Box>
-                                    <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                                        {serverStatus.server_running ? (
-                                            <CheckCircle color="success" />
-                                        ) : (
-                                            <Cancel color="error" />
-                                        )}
-                                        <Typography variant="h6">
-                                            Status: {serverStatus.server_running ? 'Running' : 'Stopped'}
-                                        </Typography>
-                                    </Stack>
-                                    <Box mb={1}>
-                                        <Typography variant="body2">
-                                            <strong>Port:</strong> {serverStatus.port}
-                                        </Typography>
-                                    </Box>
-                                    <Box mb={1}>
-                                        <Typography variant="body2">
-                                            <strong>Providers:</strong> {serverStatus.providers_enabled}/{serverStatus.providers_total}
-                                        </Typography>
-                                    </Box>
-                                    {serverStatus.uptime && (
-                                        <Box mb={1}>
-                                            <Typography variant="body2">
-                                                <strong>Uptime:</strong> {serverStatus.uptime}
-                                            </Typography>
-                                        </Box>
+                <CardGridItem xs={12} md={6}>
+                    <UnifiedCard
+                        title="Server Status"
+                        subtitle={serverStatus ? (serverStatus.server_running ? "Server is running" : "Server is stopped") : "Loading..."}
+                        size="large"
+                    >
+                        {serverStatus ? (
+                            <Stack spacing={2}>
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                    {serverStatus.server_running ? (
+                                        <CheckCircle color="success" />
+                                    ) : (
+                                        <Cancel color="error" />
                                     )}
-                                    {serverStatus.last_updated && (
-                                        <Box mb={1}>
-                                            <Typography variant="body2">
-                                                <strong>Last Updated:</strong> {serverStatus.last_updated}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                    {serverStatus.request_count !== undefined && (
-                                        <Box mb={1}>
-                                            <Typography variant="body2">
-                                                <strong>Request Count:</strong> {serverStatus.request_count}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                    <Stack direction="row" spacing={2} mt={3}>
-                                        <Button
-                                            variant="contained"
-                                            color="success"
-                                            onClick={handleStartServer}
-                                            disabled={serverStatus.server_running}
-                                        >
-                                            Start
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="error"
-                                            onClick={handleStopServer}
-                                            disabled={!serverStatus.server_running}
-                                        >
-                                            Stop
-                                        </Button>
-                                        <Button variant="contained" onClick={handleRestartServer}>
-                                            Restart
-                                        </Button>
-                                    </Stack>
-                                </Box>
-                            ) : (
-                                <Typography color="text.secondary">Loading...</Typography>
-                            )}
-                        </CardContent>
-                    </Card>
-                </Grid>
+                                    <Typography variant="h6">
+                                        Status: {serverStatus.server_running ? 'Running' : 'Stopped'}
+                                    </Typography>
+                                </Stack>
+                                <Typography variant="body2">
+                                    <strong>Port:</strong> {serverStatus.port}
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Providers:</strong> {serverStatus.providers_enabled}/{serverStatus.providers_total}
+                                </Typography>
+                                {serverStatus.uptime && (
+                                    <Typography variant="body2">
+                                        <strong>Uptime:</strong> {serverStatus.uptime}
+                                    </Typography>
+                                )}
+                                {serverStatus.last_updated && (
+                                    <Typography variant="body2">
+                                        <strong>Last Updated:</strong> {serverStatus.last_updated}
+                                    </Typography>
+                                )}
+                                {serverStatus.request_count !== undefined && (
+                                    <Typography variant="body2">
+                                        <strong>Request Count:</strong> {serverStatus.request_count}
+                                    </Typography>
+                                )}
+                                <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={handleStartServer}
+                                        disabled={serverStatus.server_running}
+                                    >
+                                        Start
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        onClick={handleStopServer}
+                                        disabled={!serverStatus.server_running}
+                                    >
+                                        Stop
+                                    </Button>
+                                    <Button variant="contained" onClick={handleRestartServer}>
+                                        Restart
+                                    </Button>
+                                </Stack>
+                            </Stack>
+                        ) : (
+                            <Typography color="text.secondary">Loading...</Typography>
+                        )}
+                    </UnifiedCard>
+                </CardGridItem>
 
                 {/* Configuration */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                ⚙️ Configuration
-                            </Typography>
-                            {serverStatus ? (
-                                <Box>
-                                    <Box mb={2} p={2} bgcolor="grey.100" borderRadius={1}>
-                                        <Typography variant="body2" gutterBottom>
-                                            <strong>Server Port</strong>
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                                            {serverStatus.port}
-                                        </Typography>
-                                    </Box>
-                                    <Box mb={2} p={2} bgcolor="grey.100" borderRadius={1}>
-                                        <Typography variant="body2" gutterBottom>
-                                            <strong>Enabled Providers</strong>
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                                            {serverStatus.providers_enabled} of {serverStatus.providers_total}
-                                        </Typography>
-                                    </Box>
-                                    {serverStatus.action_stats && (
-                                        <Box mb={2} p={2} bgcolor="grey.100" borderRadius={1}>
-                                            <Typography variant="body2" gutterBottom>
-                                                <strong>Total Actions</strong>
-                                            </Typography>
-                                            <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                                                {String(Object.values(serverStatus.action_stats).reduce((a: any, b: any) => a + b, 0))}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                    <Stack direction="row" spacing={2} mt={3}>
-                                        <Button variant="outlined" onClick={loadServerStatus}>
-                                            Refresh
-                                        </Button>
-                                        <Button variant="contained" onClick={handleGenerateToken}>
-                                            Generate Token
-                                        </Button>
-                                    </Stack>
+                <CardGridItem xs={12} md={6}>
+                    <UnifiedCard
+                        title="Configuration"
+                        subtitle="Server configuration and management"
+                        size="large"
+                    >
+                        {serverStatus ? (
+                            <Stack spacing={3}>
+                                <Box sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        Server Port
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                                        {serverStatus.port}
+                                    </Typography>
                                 </Box>
-                            ) : (
-                                <Typography color="text.secondary">Loading...</Typography>
-                            )}
-                        </CardContent>
-                    </Card>
-                </Grid>
+                                <Box sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        Enabled Providers
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                                        {serverStatus.providers_enabled} of {serverStatus.providers_total}
+                                    </Typography>
+                                </Box>
+                                {serverStatus.action_stats && (
+                                    <Box sx={{ p: 2, backgroundColor: 'grey.50', borderRadius: 2 }}>
+                                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                                            Total Actions
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontFamily: 'monospace', fontWeight: 600 }}>
+                                            {String(Object.values(serverStatus.action_stats).reduce((a: any, b: any) => a + b, 0))}
+                                        </Typography>
+                                    </Box>
+                                )}
+                                <Stack direction="row" spacing={2}>
+                                    <Button variant="outlined" onClick={loadServerStatus}>
+                                        Refresh Status
+                                    </Button>
+                                    <Button variant="contained" onClick={handleGenerateToken}>
+                                        Generate Token
+                                    </Button>
+                                </Stack>
+                            </Stack>
+                        ) : (
+                            <Typography color="text.secondary">Loading...</Typography>
+                        )}
+                    </UnifiedCard>
+                </CardGridItem>
 
                 {/* Activity Log */}
-                <Grid item xs={12}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                📜 Recent Activity
-                            </Typography>
-                            <Stack direction="row" spacing={2} mb={2}>
+                <CardGridItem xs={12}>
+                    <UnifiedCard
+                        title="Activity Log"
+                        subtitle={`${activityLog.length} recent activity entries`}
+                        size="full"
+                    >
+                        <Stack spacing={1}>
+                            <Stack direction="row" spacing={2}>
                                 <Button variant="outlined" onClick={loadActivityLog}>
                                     Refresh Log
                                 </Button>
@@ -289,14 +277,17 @@ const Server = () => {
                             </Stack>
                             <Box
                                 sx={{
-                                    bgcolor: 'grey.900',
-                                    color: 'grey.100',
+                                    flex: 1,
+                                    backgroundColor: '#1e293b',
+                                    color: '#e2e8f0',
                                     p: 2,
-                                    borderRadius: 1,
+                                    borderRadius: 2,
                                     fontFamily: 'monospace',
-                                    fontSize: '0.9rem',
-                                    maxHeight: 400,
+                                    fontSize: '0.75rem',
                                     overflowY: 'auto',
+                                    border: '1px solid',
+                                    borderColor: 'divider',
+                                    minHeight: 320,
                                 }}
                             >
                                 {activityLog.length > 0 ? (
@@ -307,12 +298,12 @@ const Server = () => {
                                             <Box key={index} mb={0.5}>
                                                 <Typography
                                                     component="span"
-                                                    sx={{ color: 'grey.500', fontSize: '0.85rem' }}
+                                                    sx={{ color: '#64748b', fontSize: '0.75rem' }}
                                                 >
                                                     [{timestamp}]
                                                 </Typography>{' '}
-                                                <Typography component="span" color={isSuccess ? 'success.light' : 'error.light'}>
-                                                    {isSuccess ? '✅' : '❌'}
+                                                <Typography component="span" sx={{ color: isSuccess ? '#059669' : '#dc2626' }}>
+                                                    {isSuccess ? 'Success' : 'Failed'}
                                                 </Typography>{' '}
                                                 <Typography component="span">
                                                     {entry.action}: {entry.message}
@@ -321,13 +312,13 @@ const Server = () => {
                                         );
                                     })
                                 ) : (
-                                    <Typography color="grey.500">No recent activity</Typography>
+                                    <Typography color="#64748b">No recent activity</Typography>
                                 )}
                             </Box>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
+                        </Stack>
+                    </UnifiedCard>
+                </CardGridItem>
+            </CardGrid>
         </Box>
     );
 };

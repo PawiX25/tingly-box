@@ -3,12 +3,9 @@ import {
     Alert,
     Box,
     Button,
-    Card,
-    CardContent,
     Chip,
     CircularProgress,
     FormControl,
-    Grid,
     InputLabel,
     MenuItem,
     Select,
@@ -18,6 +15,8 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
+import UnifiedCard from '../components/UnifiedCard';
+import CardGrid, { CardGridItem } from '../components/CardGrid';
 
 const Dashboard = () => {
     const [serverStatus, setServerStatus] = useState<any>(null);
@@ -254,21 +253,20 @@ const Dashboard = () => {
                 </Alert>
             )}
 
-            <Grid container spacing={3}>
+            <CardGrid>
                 {/* Default Model Configuration */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                🎯 Default Model Configuration
-                            </Typography>
-
+                <CardGridItem xs={12} md={6}>
+                    <UnifiedCard
+                        title="Default Model Configuration"
+                        subtitle="Configure default provider and model settings"
+                        size="large"
+                    >
+                        <Stack spacing={2}>
                             <TextField
                                 fullWidth
                                 label="Request Model Name"
                                 value={requestModelName}
                                 onChange={(e) => setRequestModelName(e.target.value)}
-                                margin="normal"
                                 helperText="When requests use this model name, the default provider and model will be used"
                             />
 
@@ -277,11 +275,10 @@ const Dashboard = () => {
                                 label="Response Model"
                                 value={responseModelName}
                                 onChange={(e) => setResponseModelName(e.target.value)}
-                                margin="normal"
                                 helperText="Model to use for response processing (optional - leave empty for default behavior)"
                             />
 
-                            <FormControl fullWidth margin="normal">
+                            <FormControl fullWidth>
                                 <InputLabel>Default Provider</InputLabel>
                                 <Select
                                     value={defaultProvider}
@@ -297,7 +294,7 @@ const Dashboard = () => {
                                 </Select>
                             </FormControl>
 
-                            <FormControl fullWidth margin="normal" disabled={!defaultProvider}>
+                            <FormControl fullWidth disabled={!defaultProvider}>
                                 <InputLabel>Default Model</InputLabel>
                                 <Select
                                     value={defaultModel}
@@ -313,7 +310,7 @@ const Dashboard = () => {
                                 </Select>
                             </FormControl>
 
-                            <Stack direction="row" spacing={2} mt={2}>
+                            <Stack direction="row" spacing={2}>
                                 <Button variant="contained" onClick={handleSaveDefaults}>
                                     Save Defaults
                                 </Button>
@@ -321,225 +318,212 @@ const Dashboard = () => {
                                     Refresh Models
                                 </Button>
                             </Stack>
-                        </CardContent>
-                    </Card>
-                </Grid>
+                        </Stack>
+                    </UnifiedCard>
+                </CardGridItem>
 
                 {/* Provider Selection */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                ⚡ Quick Provider Selection
-                            </Typography>
-                            <Grid container spacing={2}>
+                <CardGridItem xs={12} md={6}>
+                    <UnifiedCard
+                        title="Provider Selection"
+                        subtitle="Quick access to all configured providers"
+                        size="large"
+                    >
+                        <Box sx={{ maxHeight: 200, overflowY: 'auto' }}>
+                            <Stack spacing={2}>
                                 {providers.map((provider) => {
                                     const providerData = providerModels[provider.name];
                                     const models = providerData ? providerData.models : [];
                                     const isDefault = defaults.defaultProvider === provider.name;
 
                                     return (
-                                        <Grid item xs={12} key={provider.name}>
-                                            <Box
-                                                sx={{
-                                                    border: 2,
-                                                    borderColor: isDefault
-                                                        ? 'warning.main'
-                                                        : provider.enabled
-                                                            ? 'success.main'
-                                                            : 'error.main',
-                                                    borderRadius: 2,
-                                                    p: 2,
-                                                    bgcolor: isDefault
-                                                        ? 'warning.light'
-                                                        : provider.enabled
-                                                            ? 'success.light'
-                                                            : 'error.light',
-                                                    opacity: provider.enabled ? 1 : 0.7,
-                                                }}
-                                            >
-                                                <Stack spacing={1}>
-                                                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                                        <Typography variant="h6">{provider.name}</Typography>
-                                                        <Chip
-                                                            label={provider.enabled ? 'Enabled' : 'Disabled'}
-                                                            color={provider.enabled ? 'success' : 'error'}
-                                                            size="small"
-                                                        />
-                                                    </Stack>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {models.length > 0 ? `${models.length} models` : 'No models loaded'}
+                                        <Box
+                                            key={provider.name}
+                                            sx={{
+                                                border: 1,
+                                                borderColor: isDefault
+                                                    ? 'primary.main'
+                                                    : provider.enabled
+                                                        ? 'success.main'
+                                                        : 'divider',
+                                                borderRadius: 1,
+                                                p: 2,
+                                                backgroundColor: isDefault
+                                                    ? 'primary.50'
+                                                    : provider.enabled
+                                                        ? 'transparent'
+                                                        : 'grey.50',
+                                                opacity: provider.enabled ? 1 : 0.7,
+                                            }}
+                                        >
+                                            <Stack spacing={1}>
+                                                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                                                        {provider.name}
                                                     </Typography>
-                                                    <Stack direction="row" spacing={1}>
-                                                        {!isDefault ? (
-                                                            <Button
-                                                                size="small"
-                                                                variant="contained"
-                                                                color="warning"
-                                                                onClick={() => setDefaultProviderHandler(provider.name)}
-                                                            >
-                                                                Set Default
-                                                            </Button>
-                                                        ) : (
-                                                            <Chip label="Default Provider" color="warning" size="small" />
-                                                        )}
+                                                    <Chip
+                                                        label={provider.enabled ? 'Enabled' : 'Disabled'}
+                                                        color={provider.enabled ? 'success' : 'error'}
+                                                        size="small"
+                                                    />
+                                                </Stack>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {models.length > 0 ? `${models.length} models` : 'No models loaded'}
+                                                </Typography>
+                                                <Stack direction="row" spacing={1}>
+                                                    {!isDefault ? (
                                                         <Button
                                                             size="small"
                                                             variant="outlined"
-                                                            onClick={() => fetchProviderModels(provider.name)}
+                                                            onClick={() => setDefaultProviderHandler(provider.name)}
                                                         >
-                                                            Fetch Models
+                                                            Set Default
                                                         </Button>
-                                                    </Stack>
+                                                    ) : (
+                                                        <Chip label="Default" color="primary" size="small" />
+                                                    )}
+                                                    <Button
+                                                        size="small"
+                                                        variant="outlined"
+                                                        onClick={() => fetchProviderModels(provider.name)}
+                                                    >
+                                                        Fetch Models
+                                                    </Button>
                                                 </Stack>
-                                            </Box>
-                                        </Grid>
+                                            </Stack>
+                                        </Box>
                                     );
                                 })}
-                            </Grid>
-                        </CardContent>
-                    </Card>
-                </Grid>
+                            </Stack>
+                        </Box>
+                    </UnifiedCard>
+                </CardGridItem>
 
                 {/* Server Status */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                📊 Server Status
-                            </Typography>
-                            {serverStatus ? (
-                                <Box>
-                                    <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                                        {serverStatus.server_running ? (
-                                            <CheckCircle color="success" />
-                                        ) : (
-                                            <Cancel color="error" />
-                                        )}
-                                        <Typography>
-                                            <strong>Status:</strong> {serverStatus.server_running ? 'Running' : 'Stopped'}
-                                        </Typography>
-                                    </Stack>
-                                    <Box mb={1}>
-                                        <Typography variant="body2">
-                                            <strong>Port:</strong> {serverStatus.port}
-                                        </Typography>
-                                    </Box>
-                                    <Box mb={1}>
-                                        <Typography variant="body2">
-                                            <strong>Providers:</strong> {serverStatus.providers_enabled}/{serverStatus.providers_total}
-                                        </Typography>
-                                    </Box>
-                                    {serverStatus.uptime && (
-                                        <Box mb={1}>
-                                            <Typography variant="body2">
-                                                <strong>Uptime:</strong> {serverStatus.uptime}
-                                            </Typography>
-                                        </Box>
+                <CardGridItem xs={12} md={6}>
+                    <UnifiedCard
+                        title="Server Status"
+                        subtitle="Monitor and control server operations"
+                        size="medium"
+                    >
+                        {serverStatus ? (
+                            <Stack spacing={2}>
+                                <Stack direction="row" alignItems="center" spacing={1}>
+                                    {serverStatus.server_running ? (
+                                        <CheckCircle color="success" />
+                                    ) : (
+                                        <Cancel color="error" />
                                     )}
-                                    <Stack direction="row" spacing={2} mt={2}>
-                                        <Button
-                                            variant="contained"
-                                            color="success"
-                                            onClick={handleStartServer}
-                                            disabled={serverStatus.server_running}
-                                        >
-                                            Start
-                                        </Button>
-                                        <Button
-                                            variant="contained"
-                                            color="error"
-                                            onClick={handleStopServer}
-                                            disabled={!serverStatus.server_running}
-                                        >
-                                            Stop
-                                        </Button>
-                                        <Button variant="contained" onClick={handleRestartServer}>
-                                            Restart
-                                        </Button>
-                                    </Stack>
-                                </Box>
-                            ) : (
-                                <Typography color="text.secondary">Loading...</Typography>
-                            )}
-                        </CardContent>
-                    </Card>
-                </Grid>
-
-                {/* Providers Summary */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                👥 Providers
-                            </Typography>
-                            {providersStatus ? (
-                                <Box>
-                                    <Box mb={1}>
-                                        <Typography variant="body2">
-                                            <strong>Total Providers:</strong> {providersStatus.length}
-                                        </Typography>
-                                    </Box>
-                                    <Box mb={1}>
-                                        <Typography variant="body2">
-                                            <strong>Enabled:</strong> {providersStatus.filter((p: any) => p.enabled).length}
-                                        </Typography>
-                                    </Box>
+                                    <Typography variant="body1">
+                                        <strong>Status:</strong> {serverStatus.server_running ? 'Running' : 'Stopped'}
+                                    </Typography>
+                                </Stack>
+                                <Typography variant="body2">
+                                    <strong>Port:</strong> {serverStatus.port}
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Providers:</strong> {serverStatus.providers_enabled}/{serverStatus.providers_total}
+                                </Typography>
+                                {serverStatus.uptime && (
+                                    <Typography variant="body2">
+                                        <strong>Uptime:</strong> {serverStatus.uptime}
+                                    </Typography>
+                                )}
+                                <Stack direction="row" spacing={2}>
                                     <Button
                                         variant="contained"
-                                        sx={{ mt: 2 }}
-                                        onClick={() => window.location.href = '/providers'}
+                                        color="success"
+                                        onClick={handleStartServer}
+                                        disabled={serverStatus.server_running}
                                     >
-                                        Manage Providers
+                                        Start
                                     </Button>
-                                </Box>
-                            ) : (
-                                <Typography color="text.secondary">Loading...</Typography>
-                            )}
-                        </CardContent>
-                    </Card>
-                </Grid>
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        onClick={handleStopServer}
+                                        disabled={!serverStatus.server_running}
+                                    >
+                                        Stop
+                                    </Button>
+                                    <Button variant="contained" onClick={handleRestartServer}>
+                                        Restart
+                                    </Button>
+                                </Stack>
+                            </Stack>
+                        ) : (
+                            <Typography color="text.secondary">Loading...</Typography>
+                        )}
+                    </UnifiedCard>
+                </CardGridItem>
+
+                {/* Providers Summary */}
+                <CardGridItem xs={12} md={6}>
+                    <UnifiedCard
+                        title="Providers"
+                        subtitle="Overview of configured providers"
+                        size="medium"
+                    >
+                        {providersStatus ? (
+                            <Stack spacing={2}>
+                                <Typography variant="body2">
+                                    <strong>Total Providers:</strong> {providersStatus.length}
+                                </Typography>
+                                <Typography variant="body2">
+                                    <strong>Enabled:</strong> {providersStatus.filter((p: any) => p.enabled).length}
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    onClick={() => window.location.href = '/providers'}
+                                >
+                                    Manage Providers
+                                </Button>
+                            </Stack>
+                        ) : (
+                            <Typography color="text.secondary">Loading...</Typography>
+                        )}
+                    </UnifiedCard>
+                </CardGridItem>
 
                 {/* Authentication */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                🔑 Authentication
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" mb={2}>
-                                Generate JWT token for API access
-                            </Typography>
-                            <Button variant="contained" onClick={handleGenerateToken}>
-                                Generate Token
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </Grid>
+                <CardGridItem xs={12} md={6}>
+                    <UnifiedCard
+                        title="Authentication"
+                        subtitle="Generate JWT token for API access"
+                        size="small"
+                    >
+                        <Button variant="contained" onClick={handleGenerateToken}>
+                            Generate Token
+                        </Button>
+                    </UnifiedCard>
+                </CardGridItem>
 
                 {/* Recent Activity */}
-                <Grid item xs={12} md={6}>
-                    <Card>
-                        <CardContent>
-                            <Typography variant="h2" gutterBottom>
-                                📜 Recent Activity
-                            </Typography>
+                <CardGridItem xs={12} md={6}>
+                    <UnifiedCard
+                        title="Recent Activity"
+                        subtitle="Latest system actions and events"
+                        size="medium"
+                    >
+                        <Stack spacing={1}>
                             <Box
                                 sx={{
-                                    maxHeight: 200,
+                                    flex: 1,
                                     overflowY: 'auto',
                                     border: '1px solid',
                                     borderColor: 'divider',
                                     borderRadius: 1,
-                                    p: 1,
+                                    p: 1.5,
+                                    backgroundColor: 'grey.50',
+                                    minHeight: 120,
                                 }}
                             >
                                 {recentActivity.length > 0 ? (
                                     recentActivity.map((entry, index) => (
-                                        <Box key={index} mb={1}>
-                                            <Typography variant="body2">
+                                        <Box key={index} mb={0.5}>
+                                            <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
                                                 {new Date(entry.timestamp).toLocaleTimeString()}{' '}
-                                                {entry.success ? '✅' : '❌'} {entry.action}
+                                                {entry.success ? 'Success' : 'Failed'}: {entry.action}
                                             </Typography>
                                         </Box>
                                     ))
@@ -549,15 +533,14 @@ const Dashboard = () => {
                             </Box>
                             <Button
                                 variant="outlined"
-                                sx={{ mt: 2 }}
                                 onClick={() => window.location.href = '/history'}
                             >
                                 View Full History
                             </Button>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
+                        </Stack>
+                    </UnifiedCard>
+                </CardGridItem>
+            </CardGrid>
         </Box>
     );
 };
