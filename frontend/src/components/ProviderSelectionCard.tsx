@@ -22,7 +22,7 @@ const ProviderSelectionCard = ({
         <UnifiedCard
             title="Provider Selection"
             subtitle="Quick access to all configured providers"
-            size="large"
+            size="medium"
         >
             <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
                 {providers.length > 0 ? (
