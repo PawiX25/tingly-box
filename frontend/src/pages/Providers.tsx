@@ -13,6 +13,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import CardGrid, { CardGridItem } from '../components/CardGrid';
 import UnifiedCard from '../components/UnifiedCard';
@@ -29,6 +30,9 @@ const Providers = () => {
     const [providerApiBase, setProviderApiBase] = useState('');
     const [providerToken, setProviderToken] = useState('');
 
+    // Add dialog
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+
     // Edit dialog
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [editingProvider, setEditingProvider] = useState<any>(null);
@@ -40,6 +44,13 @@ const Providers = () => {
     useEffect(() => {
         loadProviders();
     }, []);
+
+    const handleAddProviderClick = () => {
+        setProviderName('');
+        setProviderApiBase('');
+        setProviderToken('');
+        setAddDialogOpen(true);
+    };
 
     const loadProviders = async () => {
         setLoading(true);
@@ -72,6 +83,7 @@ const Providers = () => {
             setProviderName('');
             setProviderApiBase('');
             setProviderToken('');
+            setAddDialogOpen(false);
             loadProviders();
         } else {
             setMessage({ type: 'error', text: `Failed to add provider: ${result.error}` });
@@ -189,6 +201,7 @@ const Providers = () => {
                                             <ProviderCard
                                                 provider={provider}
                                                 variant="detailed"
+                                                onAdd={handleAddProviderClick}
                                                 onEdit={handleEditProvider}
                                                 onToggle={handleToggleProvider}
                                                 onDelete={handleDeleteProvider}
@@ -210,59 +223,71 @@ const Providers = () => {
                     </UnifiedCard>
                 </CardGridItem>
 
-                <CardGridItem xs={12}>
-                    <UnifiedCard
-                        title="Add New Provider"
-                        subtitle="Configure a new AI provider for your proxy"
-                        size="large"
-                    >
-                        <form onSubmit={handleAddProvider}>
-                            <Stack spacing={3}>
-                                <TextField
-                                    fullWidth
-                                    label="Provider Name"
-                                    value={providerName}
-                                    onChange={(e) => setProviderName(e.target.value)}
-                                    required
-                                    placeholder="e.g., openai, anthropic"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="API Base URL"
-                                    value={providerApiBase}
-                                    onChange={(e) => setProviderApiBase(e.target.value)}
-                                    required
-                                    placeholder="e.g., https://api.openai.com/v1"
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="API Token"
-                                    type="password"
-                                    value={providerToken}
-                                    onChange={(e) => setProviderToken(e.target.value)}
-                                    required
-                                    placeholder="Your API token"
-                                />
-                                <Stack direction="row" spacing={2}>
-                                    <Button type="submit" variant="contained">
-                                        Add Provider
-                                    </Button>
-                                    <Button
-                                        variant="outlined"
-                                        onClick={() => {
-                                            setProviderName('');
-                                            setProviderApiBase('');
-                                            setProviderToken('');
-                                        }}
-                                    >
-                                        Clear Form
-                                    </Button>
-                                </Stack>
-                            </Stack>
-                        </form>
-                    </UnifiedCard>
-                </CardGridItem>
+                {providers.length === 0 && (
+                    <CardGridItem xs={12}>
+                        <UnifiedCard
+                            title="No Providers Configured"
+                            subtitle="Get started by adding your first AI provider"
+                            size="large"
+                        >
+                            <Box textAlign="center" py={3}>
+                                <Typography color="text.secondary" gutterBottom>
+                                    Click the + button on any card to add a new provider
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    startIcon={<Add />}
+                                    onClick={() => setAddDialogOpen(true)}
+                                    sx={{ mt: 2 }}
+                                >
+                                    Add Your First Provider
+                                </Button>
+                            </Box>
+                        </UnifiedCard>
+                    </CardGridItem>
+                )}
             </CardGrid>
+
+            {/* Add Dialog */}
+            <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>Add New Provider</DialogTitle>
+                <form onSubmit={handleAddProvider}>
+                    <DialogContent>
+                        <Stack spacing={2} mt={1}>
+                            <TextField
+                                fullWidth
+                                label="Provider Name"
+                                value={providerName}
+                                onChange={(e) => setProviderName(e.target.value)}
+                                required
+                                placeholder="e.g., openai, anthropic"
+                                autoFocus
+                            />
+                            <TextField
+                                fullWidth
+                                label="API Base URL"
+                                value={providerApiBase}
+                                onChange={(e) => setProviderApiBase(e.target.value)}
+                                required
+                                placeholder="e.g., https://api.openai.com/v1"
+                            />
+                            <TextField
+                                fullWidth
+                                label="API Token"
+                                type="password"
+                                value={providerToken}
+                                onChange={(e) => setProviderToken(e.target.value)}
+                                required
+                                placeholder="Your API token"
+                            />
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+                        <Button type="submit" variant="contained">Add Provider</Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
 
             {/* Edit Dialog */}
             <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>

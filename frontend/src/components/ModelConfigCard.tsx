@@ -1,3 +1,4 @@
+import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -12,7 +13,7 @@ import {
     Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { api } from '../services/api';
 import UnifiedCard from './UnifiedCard';
 
 interface ConfigProvider {
@@ -37,32 +38,89 @@ interface ModelConfigCardProps {
 }
 
 const ModelConfigCard = ({
-                             defaults,
-                             providers,
-                             providerModels,
-                             onLoadDefaults,
-                             onLoadProviderSelectionPanel,
-                         }: ModelConfigCardProps) => {
+    defaults,
+    providers,
+    providerModels,
+    onLoadDefaults,
+    onLoadProviderSelectionPanel,
+}: ModelConfigCardProps) => {
     const [configRecords, setConfigRecords] = useState<ConfigRecord[]>([]);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     useEffect(() => {
         if (defaults) {
-            const initialRecord: ConfigRecord = {
-                id: `record-${Date.now()}`,
-                requestModel: defaults.requestModel || 'tingly',
-                responseModel: defaults.responseModel || '',
-                providers: defaults.defaultProvider
-                    ? [
-                        {
-                            id: `provider-${Date.now()}`,
-                            provider: defaults.defaultProvider,
-                            model: defaults.defaultModel || '',
-                        },
-                    ]
-                    : [],
-            };
-            setConfigRecords([initialRecord]);
+            // Handle new data structure with request_configs
+            const requestConfigs = defaults.request_configs || [];
+
+            if (requestConfigs.length > 0) {
+                // Group configs by request_model
+                const groupedByRequestModel = requestConfigs.reduce((acc: any, config: any) => {
+                    const requestModel = config.request_model || 'tingly';
+                    if (!acc[requestModel]) {
+                        acc[requestModel] = {
+                            id: `record-${Date.now()}-${Math.random()}`,
+                            requestModel,
+                            responseModel: config.response_model || '',
+                            providers: [],
+                            responseModels: config.response_model ? [config.response_model] : [],
+                        };
+                    }
+
+                    // Add provider to the group if it exists
+                    if (config.provider) {
+                        acc[requestModel].providers.push({
+                            id: `provider-${Date.now()}-${Math.random()}`,
+                            provider: config.provider,
+                            model: config.default_model || '',
+                            responseModel: config.response_model || '',
+                        });
+                    }
+
+                    return acc;
+                }, {});
+
+                // Convert grouped object to array of records
+                const records: ConfigRecord[] = Object.values(groupedByRequestModel).map((record: any) => {
+                    // Check if all providers have the same responseModel
+                    const uniqueResponseModels = [...new Set(record.responseModels)] as string[];
+                    const finalResponseModel: string = uniqueResponseModels.length === 1
+                        ? uniqueResponseModels[0]
+                        : '';
+
+                    // Remove responseModels and responseModel from providers before returning
+                    const providers = record.providers.map((p: any) => ({
+                        id: p.id,
+                        provider: p.provider,
+                        model: p.model,
+                    }));
+
+                    return {
+                        id: record.id,
+                        requestModel: record.requestModel,
+                        responseModel: finalResponseModel,
+                        providers,
+                    };
+                });
+
+                setConfigRecords(records);
+            } else {
+                // Fallback to old structure for backward compatibility
+                const initialRecord: ConfigRecord = {
+                    id: `record-${Date.now()}`,
+                    requestModel: defaults.requestModel || 'tingly',
+                    responseModel: defaults.responseModel || '',
+                    providers: defaults.defaultProvider
+                        ? [
+                            {
+                                id: `provider-${Date.now()}`,
+                                provider: defaults.defaultProvider,
+                                model: defaults.defaultModel || '',
+                            },
+                        ]
+                        : [],
+                };
+                setConfigRecords([initialRecord]);
+            }
         }
     }, [defaults]);
 
@@ -151,6 +209,7 @@ const ModelConfigCard = ({
         }
 
         for (const record of configRecords) {
+            console.log("record", record)
             if (!record.requestModel) {
                 setMessage({
                     type: 'error',
@@ -170,8 +229,36 @@ const ModelConfigCard = ({
             }
         }
 
-        setMessage({ type: 'success', text: 'Configurations saved successfully' });
-        await onLoadProviderSelectionPanel();
+        // Convert config records to request_configs format
+        const requestConfigs = configRecords.flatMap(record => {
+            // For simplicity, use the first provider if exists
+            console.log(record)
+            return record.providers.map(it => {
+                return {
+                    request_model: record.requestModel,
+                    response_model: record.responseModel,
+                    provider: it.provider,
+                    default_model: it.model,
+                }
+            })
+        });
+
+        const payload = {
+            request_configs: requestConfigs,
+        };
+
+        try {
+            console.log("payload", payload)
+            const result = await api.setDefaults(payload);
+            if (result.success) {
+                setMessage({ type: 'success', text: 'Configurations saved successfully' });
+                await onLoadProviderSelectionPanel();
+            } else {
+                setMessage({ type: 'error', text: result.error || 'Failed to save configurations' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: `Error saving configurations: ${error}` });
+        }
     };
 
     return (
@@ -272,69 +359,69 @@ const ModelConfigCard = ({
                                 <Stack spacing={1.5}>
                                     {record.providers.map((provider) => (
                                         <>
-                                        <Stack direction="row" spacing={1.5} alignItems="center">
-                                            <FormControl sx={{ flex: 1 }} size="small">
-                                                <InputLabel>Provider</InputLabel>
-                                                <Select
-                                                    value={provider.provider}
-                                                    onChange={(e) =>
-                                                        updateProvider(
-                                                            record.id,
-                                                            provider.id,
-                                                            'provider',
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    label="Provider"
-                                                >
-                                                    <MenuItem value="">Select</MenuItem>
-                                                    {providers.map((p) => (
-                                                        <MenuItem key={p.name} value={p.name}>
-                                                            {p.name}
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
-
-                                            <FormControl
-                                                sx={{ flex: 1 }}
-                                                size="small"
-                                                disabled={!provider.provider}
-                                            >
-                                                <InputLabel>Model</InputLabel>
-                                                <Select
-                                                    value={provider.model}
-                                                    onChange={(e) =>
-                                                        updateProvider(
-                                                            record.id,
-                                                            provider.id,
-                                                            'model',
-                                                            e.target.value
-                                                        )
-                                                    }
-                                                    label="Model"
-                                                >
-                                                    <MenuItem value="">Select</MenuItem>
-                                                    {providerModels[provider.provider]?.models.map(
-                                                        (model: string) => (
-                                                            <MenuItem key={model} value={model}>
-                                                                {model}
+                                            <Stack direction="row" spacing={1.5} alignItems="center">
+                                                <FormControl sx={{ flex: 1 }} size="small">
+                                                    <InputLabel>Provider</InputLabel>
+                                                    <Select
+                                                        value={provider.provider}
+                                                        onChange={(e) =>
+                                                            updateProvider(
+                                                                record.id,
+                                                                provider.id,
+                                                                'provider',
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        label="Provider"
+                                                    >
+                                                        <MenuItem value="">Select</MenuItem>
+                                                        {providers.map((p) => (
+                                                            <MenuItem key={p.name} value={p.name}>
+                                                                {p.name}
                                                             </MenuItem>
-                                                        )
-                                                    )}
-                                                </Select>
-                                            </FormControl>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
 
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => deleteProvider(record.id, provider.id)}
-                                                color="error"
-                                                sx={{ p: 0.5 }}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        </Stack>
-                                        <Divider sx={{ mt: 1.5 }} />
+                                                <FormControl
+                                                    sx={{ flex: 1 }}
+                                                    size="small"
+                                                    disabled={!provider.provider}
+                                                >
+                                                    <InputLabel>Model</InputLabel>
+                                                    <Select
+                                                        value={provider.model}
+                                                        onChange={(e) =>
+                                                            updateProvider(
+                                                                record.id,
+                                                                provider.id,
+                                                                'model',
+                                                                e.target.value
+                                                            )
+                                                        }
+                                                        label="Model"
+                                                    >
+                                                        <MenuItem value="">Select</MenuItem>
+                                                        {providerModels[provider.provider]?.models.map(
+                                                            (model: string) => (
+                                                                <MenuItem key={model} value={model}>
+                                                                    {model}
+                                                                </MenuItem>
+                                                            )
+                                                        )}
+                                                    </Select>
+                                                </FormControl>
+
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => deleteProvider(record.id, provider.id)}
+                                                    color="error"
+                                                    sx={{ p: 0.5 }}
+                                                >
+                                                    <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                            </Stack>
+                                            <Divider sx={{ mt: 1.5 }} />
                                         </>
                                     ))}
                                 </Stack>

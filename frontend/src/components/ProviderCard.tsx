@@ -1,4 +1,4 @@
-import { Cancel, CheckCircle, Delete, Edit } from '@mui/icons-material';
+import { Add, Cancel, CheckCircle, Delete, Edit } from '@mui/icons-material';
 import {
     Box,
     Chip,
@@ -30,6 +30,7 @@ interface ProviderCardProps {
     onDelete?: (providerName: string) => void;
     onSetDefault?: (providerName: string) => void;
     onFetchModels?: (providerName: string) => void;
+    onAdd?: () => void;
 }
 
 const ProviderCard = ({
@@ -42,6 +43,7 @@ const ProviderCard = ({
     onDelete,
     onSetDefault,
     onFetchModels,
+    onAdd,
 }: ProviderCardProps) => {
     const models = providerModels?.[provider.name]?.models || [];
     const modelsCount = models.length;
@@ -149,6 +151,16 @@ const ProviderCard = ({
                         />
                     </Stack>
                     <Stack direction="row" spacing={1}>
+                        {onAdd && (
+                            <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={onAdd}
+                                title="Add New Provider"
+                            >
+                                <Add fontSize="small" />
+                            </IconButton>
+                        )}
                         {onEdit && (
                             <IconButton
                                 size="small"

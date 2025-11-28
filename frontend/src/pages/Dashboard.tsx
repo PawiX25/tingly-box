@@ -1,12 +1,12 @@
-import { Box, CircularProgress, Alert } from '@mui/material';
+import { Alert, Box, CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
+import AuthenticationCard from '../components/AuthenticationCard';
 import CardGrid, { CardGridItem } from '../components/CardGrid';
 import ModelConfigCard from '../components/ModelConfigCard.tsx';
-import ProvidersSummaryCard from '../components/ProvidersSummaryCard';
-import ServerStatusCard from '../components/ServerStatusCard';
-import AuthenticationCard from '../components/AuthenticationCard';
-import RecentActivityCard from '../components/RecentActivityCard';
 import ProviderSelectionCard from '../components/ProviderSelectionCard';
+import ProvidersSummaryCard from '../components/ProvidersSummaryCard';
+import RecentActivityCard from '../components/RecentActivityCard';
+import ServerStatusCard from '../components/ServerStatusCard';
 import { api } from '../services/api';
 
 const Dashboard = () => {
@@ -85,6 +85,8 @@ const Dashboard = () => {
         }
     };
 
+    // This handler is kept for backward compatibility
+    // The main configuration management is now done through ModelConfigCard
     const setDefaultProviderHandler = async (providerName: string) => {
         const currentDefaults = await api.getDefaults();
         if (!currentDefaults.success) {
@@ -92,11 +94,18 @@ const Dashboard = () => {
             return;
         }
 
+        // Update the default RequestConfig with the selected provider
+        const requestConfigs = currentDefaults.data.request_configs || [];
+        if (requestConfigs.length === 0) {
+            setMessage({
+                type: 'error',
+                text: 'No request configurations found. Please use the Model Configuration card to add one.'
+            });
+            return;
+        }
+
         const payload = {
-            defaultProvider: providerName,
-            defaultModel: currentDefaults.data.defaultModel || '',
-            requestModel: currentDefaults.data.requestModel || 'tingly',
-            responseModel: currentDefaults.data.responseModel || '',
+            request_configs: requestConfigs,
         };
 
         const result = await api.setDefaults(payload);
