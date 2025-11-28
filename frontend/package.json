@@ -13,6 +13,7 @@
         "@emotion/styled": "^11.14.1",
         "@mui/icons-material": "^7.3.5",
         "@mui/material": "^7.3.5",
+        "@types/react": "^19.2.7",
         "@wailsio/runtime": "latest",
         "react": "^19.2.0",
         "react-dom": "^19.2.0",
