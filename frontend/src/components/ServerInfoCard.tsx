@@ -3,7 +3,6 @@ import {
     Box,
     Grid,
     IconButton,
-    Paper,
     Snackbar,
     Stack,
     TextField,
@@ -62,140 +61,143 @@ const ServerInfoCard = ({ currentToken }: ServerInfoCardProps) => {
             >
                 <Box>
                     <Grid container spacing={3}>
-                        <Grid size={{ xs: 12, md: 6 }}>
+                        <Grid size={{ xs: 12, md: 7 }}>
                             <Stack spacing={2}>
                                 <Typography variant="h6" color="primary" fontWeight={600}>
                                     API Endpoints
                                 </Typography>
 
-                                <TextField
-                                    label="OpenAI Base URL"
-                                    value={openaiBaseUrl}
-                                    fullWidth
-                                    size="small"
-                                    slotProps={{
-                                        input: {
-                                            readOnly: true,
-                                            endAdornment: (
-                                                <Stack direction="row" spacing={0.5}>
-                                                    <IconButton
-                                                        onClick={() => copyToClipboard(openaiBaseUrl, 'OpenAI Base URL')}
-                                                        size="small"
-                                                        title="Copy OpenAI Base URL"
-                                                    >
-                                                        <CopyIcon fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        onClick={() => {
-                                                            const openaiCurl = `curl -X POST "${openaiBaseUrl}/chat/completions" \\
+                                <Grid container spacing={2}>
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <TextField
+                                            label="OpenAI Base URL"
+                                            value={openaiBaseUrl}
+                                            fullWidth
+                                            size="small"
+                                            slotProps={{
+                                                input: {
+                                                    readOnly: true,
+                                                    endAdornment: (
+                                                        <Stack direction="row" spacing={0.5}>
+                                                            <IconButton
+                                                                onClick={() => copyToClipboard(openaiBaseUrl, 'OpenAI Base URL')}
+                                                                size="small"
+                                                                title="Copy OpenAI Base URL"
+                                                            >
+                                                                <CopyIcon fontSize="small" />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                onClick={() => {
+                                                                    const openaiCurl = `curl -X POST "${openaiBaseUrl}/chat/completions" \\
   -H "Authorization: Bearer ${token}" \\
   -H "Content-Type: application/json" \\
   -d '{"messages": [{"role": "user", "content": "Hello!"}]}'
-                                                            `;
-                                                            copyToClipboard(openaiCurl, 'OpenAI cURL command');
-                                                        }}
-                                                        size="small"
-                                                        title="Copy OpenAI cURL Example"
-                                                    >
-                                                        <TerminalIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Stack>
-                                            ),
-                                        },
-                                    }}
-                                />
+                                                                    `;
+                                                                    copyToClipboard(openaiCurl, 'OpenAI cURL command');
+                                                                }}
+                                                                size="small"
+                                                                title="Copy OpenAI cURL Example"
+                                                            >
+                                                                <TerminalIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Stack>
+                                                    ),
+                                                },
+                                            }}
+                                        />
+                                    </Grid>
 
-                                <TextField
-                                    label="Anthropic Base URL"
-                                    value={anthropicBaseUrl}
-                                    fullWidth
-                                    size="small"
-                                    slotProps={{
-                                        input: {
-                                            readOnly: true,
-                                            endAdornment: (
-                                                <Stack direction="row" spacing={0.5}>
-                                                    <IconButton
-                                                        onClick={() => copyToClipboard(anthropicBaseUrl, 'Anthropic Base URL')}
-                                                        size="small"
-                                                        title="Copy Anthropic Base URL"
-                                                    >
-                                                        <CopyIcon fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        onClick={() => {
-                                                            const anthropicCurl = `curl -X POST "${anthropicBaseUrl}/messages" \\
+                                    <Grid size={{ xs: 12, sm: 6 }}>
+                                        <TextField
+                                            label="Anthropic Base URL"
+                                            value={anthropicBaseUrl}
+                                            fullWidth
+                                            size="small"
+                                            slotProps={{
+                                                input: {
+                                                    readOnly: true,
+                                                    endAdornment: (
+                                                        <Stack direction="row" spacing={0.5}>
+                                                            <IconButton
+                                                                onClick={() => copyToClipboard(anthropicBaseUrl, 'Anthropic Base URL')}
+                                                                size="small"
+                                                                title="Copy Anthropic Base URL"
+                                                            >
+                                                                <CopyIcon fontSize="small" />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                onClick={() => {
+                                                                    const anthropicCurl = `curl -X POST "${anthropicBaseUrl}/messages" \\
   -H "Authorization: Bearer ${token}" \\
   -H "Content-Type: application/json" \\
   -d '{"messages": [{"role": "user", "content": "Hello!"}], "max_tokens": 100}'
-                                                            `;
-                                                            copyToClipboard(anthropicCurl, 'Anthropic cURL command');
-                                                        }}
-                                                        size="small"
-                                                        title="Copy Anthropic cURL Example"
-                                                    >
-                                                        <TerminalIcon fontSize="small" />
-                                                    </IconButton>
-                                                </Stack>
-                                            ),
-                                        },
-                                    }}
-                                />
+                                                                    `;
+                                                                    copyToClipboard(anthropicCurl, 'Anthropic cURL command');
+                                                                }}
+                                                                size="small"
+                                                                title="Copy Anthropic cURL Example"
+                                                            >
+                                                                <TerminalIcon fontSize="small" />
+                                                            </IconButton>
+                                                        </Stack>
+                                                    ),
+                                                },
+                                            }}
+                                        />
+                                    </Grid>
+                                </Grid>
                             </Stack>
                         </Grid>
 
-                        <Grid size={{ xs: 12, md: 6 }}>
+                        <Grid size={{ xs: 12, md: 5 }}>
                             <Stack spacing={2}>
                                 <Typography variant="h6" color="primary" fontWeight={600}>
                                     Authentication
                                 </Typography>
 
-                                <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
-                                    <TextField
-                                        label="API Token"
-                                        value={showToken ? token : token.replace(/./g, '•')}
-                                        fullWidth
-                                        size="small"
-                                        slotProps={{
-                                            input: {
-                                                readOnly: true,
-                                                type: showToken ? 'text' : 'password',
-                                                endAdornment: (
-                                                    <Stack direction="row" spacing={0.5}>
-                                                        <IconButton
-                                                            onClick={() => setShowToken(!showToken)}
-                                                            size="small"
-                                                            title={showToken ? 'Hide token' : 'Show token'}
-                                                        >
-                                                            <Typography variant="caption">
-                                                                {showToken ? '👁️' : '👁️‍🗨️'}
-                                                            </Typography>
-                                                        </IconButton>
-                                                        <IconButton
-                                                            onClick={() => copyToClipboard(token, 'API Token')}
-                                                            size="small"
-                                                            title="Copy Token"
-                                                        >
-                                                            <CopyIcon fontSize="small" />
-                                                        </IconButton>
-                                                        <IconButton
-                                                            onClick={generateToken}
-                                                            size="small"
-                                                            title="Generate New Token"
-                                                        >
-                                                            <RefreshIcon fontSize="small" />
-                                                        </IconButton>
-                                                    </Stack>
-                                                ),
-                                            },
-                                        }}
-                                    />
-                                </Paper>
+                                <TextField
+                                    label="API Token"
+                                    value={showToken ? token : token.replace(/./g, '•')}
+                                    fullWidth
+                                    size="small"
+                                    slotProps={{
+                                        input: {
+                                            readOnly: true,
+                                            type: showToken ? 'text' : 'password',
+                                            endAdornment: (
+                                                <Stack direction="row" spacing={0.5}>
+                                                    <IconButton
+                                                        onClick={() => setShowToken(!showToken)}
+                                                        size="small"
+                                                        title={showToken ? 'Hide token' : 'Show token'}
+                                                    >
+                                                        <Typography variant="caption">
+                                                            {showToken ? '👁️' : '👁️‍🗨️'}
+                                                        </Typography>
+                                                    </IconButton>
+                                                    <IconButton
+                                                        onClick={() => copyToClipboard(token, 'API Token')}
+                                                        size="small"
+                                                        title="Copy Token"
+                                                    >
+                                                        <CopyIcon fontSize="small" />
+                                                    </IconButton>
+                                                    <IconButton
+                                                        onClick={generateToken}
+                                                        size="small"
+                                                        title="Generate New Token"
+                                                    >
+                                                        <RefreshIcon fontSize="small" />
+                                                    </IconButton>
+                                                </Stack>
+                                            ),
+                                        },
+                                    }}
+                                />
                             </Stack>
                         </Grid>
                     </Grid>
-
-                  </Box>
+                </Box>
             </UnifiedCard>
 
             <Snackbar
