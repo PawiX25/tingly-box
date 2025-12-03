@@ -21,10 +21,11 @@ import (
 
 // Provider represents an AI model provider configuration
 type Provider struct {
-	Name    string `json:"name"`
-	APIBase string `json:"api_base"`
-	Token   string `json:"token"`
-	Enabled bool   `json:"enabled"`
+	Name       string `json:"name"`
+	APIBase    string `json:"api_base"`
+	APIVersion string `json:"api_version"` // "openai" or "anthropic", defaults to "openai"
+	Token      string `json:"token"`
+	Enabled    bool   `json:"enabled"`
 }
 
 // Config represents the application configuration
@@ -152,10 +153,11 @@ func (ac *AppConfig) AddProviderByName(name, apiBase, token string) error {
 	}
 
 	ac.config.Providers[name] = &Provider{
-		Name:    name,
-		APIBase: apiBase,
-		Token:   token,
-		Enabled: true,
+		Name:       name,
+		APIBase:    apiBase,
+		APIVersion: "openai", // default to openai
+		Token:      token,
+		Enabled:    true,
 	}
 
 	return ac.Save()

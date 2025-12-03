@@ -3,9 +3,11 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"tingly-box/internal/config"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // OpenAIChatCompletions handles OpenAI v1 chat completion requests
@@ -16,10 +18,43 @@ func (s *Server) OpenAIChatCompletions(c *gin.Context) {
 
 // ChatCompletions handles OpenAI-compatible chat completion requests
 func (s *Server) ChatCompletions(c *gin.Context) {
-	var req RequestWrapper
+	// Read the raw request body to check for stream parameter
+	bodyBytes, err := c.GetRawData()
+	if err != nil {
+		logrus.Error("Failed to read request body")
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error: ErrorDetail{
+				Message: "Failed to read request body: " + err.Error(),
+				Type:    "invalid_request_error",
+			},
+		})
+		return
+	}
 
-	// Parse request body
-	if err := c.ShouldBindJSON(&req); err != nil {
+	// Parse the request to check if streaming is requested
+	var rawReq map[string]interface{}
+	if err := json.Unmarshal(bodyBytes, &rawReq); err != nil {
+		logrus.Error("Invalid JSON in request body")
+		c.JSON(http.StatusBadRequest, ErrorResponse{
+			Error: ErrorDetail{
+				Message: "Invalid JSON: " + err.Error(),
+				Type:    "invalid_request_error",
+			},
+		})
+		return
+	}
+
+	// Check if streaming is requested
+	isStreaming := false
+	if stream, ok := rawReq["stream"].(bool); ok {
+		isStreaming = stream
+	}
+	logrus.Infof("Stream requested: %v", isStreaming)
+
+	// Parse request body into RequestWrapper
+	var req RequestWrapper
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
+		logrus.Error("Invalid request body")
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error: ErrorDetail{
 				Message: "Invalid request body: " + err.Error(),
@@ -29,8 +64,13 @@ func (s *Server) ChatCompletions(c *gin.Context) {
 		return
 	}
 
+	for i := 0; i < len(req.Messages); i++ {
+		logrus.Infof("messages: %s %s", *req.Messages[i].GetRole(), req.Messages[i].GetContent())
+	}
+
 	// Validate required fields
 	if req.Model == "" {
+		logrus.Error("No model id")
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error: ErrorDetail{
 				Message: "Model is required",
@@ -41,6 +81,7 @@ func (s *Server) ChatCompletions(c *gin.Context) {
 	}
 
 	if len(req.Messages) == 0 {
+		logrus.Error("No messages")
 		c.JSON(http.StatusBadRequest, ErrorResponse{
 			Error: ErrorDetail{
 				Message: "At least one message is required",
@@ -67,8 +108,46 @@ func (s *Server) ChatCompletions(c *gin.Context) {
 		req.Model = modelDef.Model
 	}
 
+	// Handle response model modification at JSON level
+	globalConfig := s.config.GetGlobalConfig()
+	responseModel := ""
+	if globalConfig != nil {
+		responseModel = globalConfig.GetResponseModel()
+	}
+	if responseModel == "" {
+		responseModel = req.Model
+	}
+
+	// Handle streaming or non-streaming request
+	if isStreaming {
+		s.handleStreamingRequest(c, provider, &req, responseModel)
+	} else {
+		s.handleNonStreamingRequest(c, provider, &req, responseModel)
+	}
+}
+
+// handleStreamingRequest handles streaming chat completion requests
+func (s *Server) handleStreamingRequest(c *gin.Context, provider *config.Provider, req *RequestWrapper, responseModel string) {
+	// Create streaming request
+	stream, err := s.forwardOpenAIStreamRequest(provider, req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{
+			Error: ErrorDetail{
+				Message: "Failed to create streaming request: " + err.Error(),
+				Type:    "api_error",
+			},
+		})
+		return
+	}
+
+	// Handle the streaming response
+	s.handleOpenAIStreamResponse(c, stream, responseModel)
+}
+
+// handleNonStreamingRequest handles non-streaming chat completion requests
+func (s *Server) handleNonStreamingRequest(c *gin.Context, provider *config.Provider, req *RequestWrapper, responseModel string) {
 	// Forward request to provider
-	response, err := s.forwardOpenAIRequest(provider, &req)
+	response, err := s.forwardOpenAIRequest(provider, req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: ErrorDetail{
@@ -77,13 +156,6 @@ func (s *Server) ChatCompletions(c *gin.Context) {
 			},
 		})
 		return
-	}
-
-	// Handle response model modification at JSON level
-	globalConfig := s.config.GetGlobalConfig()
-	responseModel := ""
-	if globalConfig != nil {
-		responseModel = globalConfig.GetResponseModel()
 	}
 
 	// Convert response to JSON map for modification
@@ -109,10 +181,8 @@ func (s *Server) ChatCompletions(c *gin.Context) {
 		return
 	}
 
-	// Update response model if configured and we have model definition
-	if responseModel != "" {
-		responseMap["model"] = responseModel
-	}
+	// Update response model if configured
+	responseMap["model"] = responseModel
 
 	// Return modified response
 	c.JSON(http.StatusOK, responseMap)

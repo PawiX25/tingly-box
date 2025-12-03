@@ -1,10 +1,17 @@
 package server
 
 import (
+	"context"
 	"net/http"
+	"strings"
 	"time"
 
+	"tingly-box/internal/config"
+
+	"github.com/anthropics/anthropic-sdk-go"
+	"github.com/anthropics/anthropic-sdk-go/option"
 	"github.com/gin-gonic/gin"
+	"github.com/openai/openai-go/v3"
 )
 
 // AnthropicMessages handles Anthropic v1 messages API requests
@@ -63,8 +70,32 @@ func (s *Server) AnthropicMessages(c *gin.Context) {
 		openaiReq.Model = modelDef.Model
 	}
 
-	// Forward request to provider
-	response, err := s.forwardOpenAIRequest(provider, openaiReq)
+	// Check provider's API version to decide which path to take
+	apiVersion := provider.APIVersion
+	if apiVersion == "" {
+		apiVersion = "openai" // default to openai
+	}
+
+	var response *openai.ChatCompletion
+
+	if apiVersion == "anthropic" {
+		// Use direct Anthropic SDK call
+		anthropicResp, err := s.forwardAnthropicRequest(provider, &anthropicReq)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, ErrorResponse{
+				Error: ErrorDetail{
+					Message: "Failed to forward Anthropic request: " + err.Error(),
+					Type:    "api_error",
+				},
+			})
+			return
+		}
+		c.JSON(http.StatusOK, anthropicResp)
+		return
+	}
+
+	// Use OpenAI conversion path (default behavior)
+	response, err = s.forwardOpenAIRequest(provider, openaiReq)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, ErrorResponse{
 			Error: ErrorDetail{
@@ -169,4 +200,79 @@ type AnthropicModel struct {
 
 type AnthropicModelsResponse struct {
 	Data []AnthropicModel `json:"data"`
+}
+
+// forwardAnthropicRequest forwards request directly using Anthropic SDK
+func (s *Server) forwardAnthropicRequest(provider *config.Provider, req *AnthropicMessagesRequest) (*AnthropicMessagesResponse, error) {
+	var apiBase = provider.APIBase
+	if strings.HasSuffix(apiBase, "/v1") {
+		apiBase = apiBase[:len(apiBase)-3]
+	}
+
+	// Create Anthropic client
+	client := anthropic.NewClient(
+		option.WithAPIKey(provider.Token),
+		option.WithBaseURL(apiBase),
+	)
+
+	// Convert AnthropicMessagesRequest to Anthropic SDK parameters
+	messages := make([]anthropic.MessageParam, 0, len(req.Messages))
+	for _, msg := range req.Messages {
+		if msg.Role == "user" {
+			messages = append(messages, anthropic.NewUserMessage(anthropic.NewTextBlock(msg.Content)))
+		} else if msg.Role == "assistant" {
+			messages = append(messages, anthropic.NewAssistantMessage(anthropic.NewTextBlock(msg.Content)))
+		}
+	}
+
+	// Build request parameters - use simpler approach for now
+	params := anthropic.MessageNewParams{
+		MaxTokens: int64(req.MaxTokens),
+		Messages:  messages,
+	}
+
+	// Set model - use Anthropic SDK model type
+	params.Model = anthropic.Model(req.Model)
+
+	// Make the request using Anthropic SDK
+	message, err := client.Messages.New(context.Background(), params)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert Anthropic SDK response to our format
+	return s.convertAnthropicSDKToResponse(message, req.Model), nil
+}
+
+// convertAnthropicSDKToResponse converts Anthropic SDK response to our format
+func (s *Server) convertAnthropicSDKToResponse(message *anthropic.Message, originalModel string) *AnthropicMessagesResponse {
+	// Convert content
+	content := make([]AnthropicContent, 0, len(message.Content))
+	for _, block := range message.Content {
+		if block.Type == "text" {
+			content = append(content, AnthropicContent{
+				Type: "text",
+				Text: string(block.Text),
+			})
+		}
+	}
+
+	// Determine stop reason
+	stopReason := string(message.StopReason)
+
+	response := &AnthropicMessagesResponse{
+		ID:           message.ID,
+		Type:         "message",
+		Role:         "assistant",
+		Content:      content,
+		Model:        originalModel,
+		StopReason:   stopReason,
+		StopSequence: "",
+		Usage: AnthropicUsage{
+			InputTokens:  int(message.Usage.InputTokens),
+			OutputTokens: int(message.Usage.OutputTokens),
+		},
+	}
+
+	return response
 }
