@@ -1,11 +1,17 @@
-import { Add, Cancel, CheckCircle, Delete, Edit } from '@mui/icons-material';
+import { Cancel, CheckCircle, Delete, Edit, Visibility, ContentCopy } from '@mui/icons-material';
 import {
     Box,
     Chip,
     IconButton,
     Stack,
     Typography,
+    Switch,
+    FormControlLabel,
+    Tooltip,
+    Menu,
+    MenuItem,
 } from '@mui/material';
+import { useState } from 'react';
 
 export interface Provider {
     name: string;
@@ -31,7 +37,6 @@ interface ProviderCardProps {
     onDelete?: (providerName: string) => void;
     onSetDefault?: (providerName: string) => void;
     onFetchModels?: (providerName: string) => void;
-    onAdd?: () => void;
 }
 
 const ProviderCard = ({
@@ -44,17 +49,42 @@ const ProviderCard = ({
     onDelete,
     onSetDefault,
     onFetchModels,
-    onAdd,
 }: ProviderCardProps) => {
     const models = providerModels?.[provider.name]?.models || [];
     const modelsCount = models.length;
+    const [tokenMenuAnchor, setTokenMenuAnchor] = useState<null | HTMLElement>(null);
+    const [showToken, setShowToken] = useState(false);
+
+    const handleTokenMenuClick = (event: React.MouseEvent<HTMLElement>) => {
+        setTokenMenuAnchor(event.currentTarget);
+    };
+
+    const handleTokenMenuClose = () => {
+        setTokenMenuAnchor(null);
+    };
+
+    const handleViewToken = () => {
+        setShowToken(true);
+        handleTokenMenuClose();
+    };
+
+    const handleCopyToken = async () => {
+        if (provider.token) {
+            try {
+                await navigator.clipboard.writeText(provider.token);
+            } catch (err) {
+                console.error('Failed to copy token:', err);
+            }
+        }
+        handleTokenMenuClose();
+    };
 
     if (variant === 'simple') {
         return (
             <Box
                 sx={{
                     width: '100%',
-                    height: 120,
+                    height: 140,
                     border: 1,
                     borderColor: isDefault
                         ? 'primary.main'
@@ -70,20 +100,28 @@ const ProviderCard = ({
                             : 'grey.50',
                     opacity: provider.enabled ? 1 : 0.7,
                     transition: 'all 0.2s ease-in-out',
+                    display: 'flex',
+                    flexDirection: 'column',
                     '&:hover': {
                         boxShadow: 1,
                     }
                 }}
             >
-                <Stack spacing={1}>
+                <Stack spacing={1} sx={{ flex: 1 }}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
                             {provider.name}
                         </Typography>
-                        <Chip
-                            label={provider.enabled ? 'Enabled' : 'Disabled'}
-                            color={provider.enabled ? 'success' : 'error'}
-                            size="small"
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={provider.enabled}
+                                    onChange={() => onToggle?.(provider.name)}
+                                    size="small"
+                                    color="success"
+                                />
+                            }
+                            label=""
                         />
                     </Stack>
                     <Typography variant="body2" color="text.secondary">
@@ -120,7 +158,7 @@ const ProviderCard = ({
         <Box
             sx={{
                 width: '100%',
-                height: 240,
+                height: 280,
                 border: 1,
                 borderLeft: 4,
                 borderColor: provider.enabled ? 'success.main' : 'error.main',
@@ -129,12 +167,15 @@ const ProviderCard = ({
                 backgroundColor: 'background.paper',
                 opacity: provider.enabled ? 1 : 0.7,
                 transition: 'all 0.2s ease-in-out',
+                display: 'flex',
+                flexDirection: 'column',
                 '&:hover': {
                     boxShadow: 1,
                 }
             }}
         >
-            <Stack spacing={2}>
+
+            <Stack spacing={2} sx={{ flex: 1 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                         <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.9rem' }}>
@@ -145,23 +186,19 @@ const ProviderCard = ({
                         ) : (
                             <Cancel color="error" fontSize="small" />
                         )}
-                        <Chip
-                            label={provider.enabled ? 'Enabled' : 'Disabled'}
-                            color={provider.enabled ? 'success' : 'error'}
-                            size="small"
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={provider.enabled}
+                                    onChange={() => onToggle?.(provider.name)}
+                                    size="small"
+                                    color="success"
+                                />
+                            }
+                            label=""
                         />
                     </Stack>
                     <Stack direction="row" spacing={1}>
-                        {onAdd && (
-                            <IconButton
-                                size="small"
-                                color="primary"
-                                onClick={onAdd}
-                                title="Add New Provider"
-                            >
-                                <Add fontSize="small" />
-                            </IconButton>
-                        )}
                         {onEdit && (
                             <IconButton
                                 size="small"
@@ -169,15 +206,6 @@ const ProviderCard = ({
                                 onClick={() => onEdit(provider.name)}
                             >
                                 <Edit fontSize="small" />
-                            </IconButton>
-                        )}
-                        {onToggle && (
-                            <IconButton
-                                size="small"
-                                color={provider.enabled ? 'warning' : 'success'}
-                                onClick={() => onToggle(provider.name)}
-                            >
-                                {provider.enabled ? <Cancel fontSize="small" /> : <CheckCircle fontSize="small" />}
                             </IconButton>
                         )}
                         {onDelete && (
@@ -208,14 +236,71 @@ const ProviderCard = ({
                     </Typography>
                 </Box>
                 <Box>
-                    <Typography variant="caption" color="text.secondary" gutterBottom>
-                        API Token
-                    </Typography>
-                    <Typography variant="caption" sx={{ fontFamily: 'monospace', backgroundColor: 'grey.100', p: 0.5, borderRadius: 1, display: 'block' }}>
-                        {provider.token ? `${provider.token.substring(0, 8)}...` : 'Not set'}
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="caption" color="text.secondary" gutterBottom>
+                            API Token
+                        </Typography>
+                        {provider.token && (
+                            <Stack direction="row" spacing={0.5}>
+                                <Tooltip title="View Token">
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleViewToken}
+                                        sx={{ p: 0.5 }}
+                                    >
+                                        <Visibility fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Copy Token">
+                                    <IconButton
+                                        size="small"
+                                        onClick={handleCopyToken}
+                                        sx={{ p: 0.5 }}
+                                    >
+                                        <ContentCopy fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                                <IconButton
+                                    size="small"
+                                    onClick={handleTokenMenuClick}
+                                    sx={{ p: 0.5 }}
+                                >
+                                    <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                                        •••
+                                    </Typography>
+                                </IconButton>
+                            </Stack>
+                        )}
+                    </Stack>
+                    <Typography variant="caption" sx={{ fontFamily: 'monospace', backgroundColor: 'grey.100', p: 0.5, borderRadius: 1, display: 'block', wordBreak: 'break-all' }}>
+                        {showToken ? provider.token : (provider.token ? `${provider.token.substring(0, 8)}...` : 'Not set')}
                     </Typography>
                 </Box>
             </Stack>
+
+            {/* Token context menu */}
+            <Menu
+                anchorEl={tokenMenuAnchor}
+                open={Boolean(tokenMenuAnchor)}
+                onClose={handleTokenMenuClose}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+            >
+                <MenuItem onClick={handleViewToken}>
+                    <Visibility fontSize="small" sx={{ mr: 1 }} />
+                    View Token
+                </MenuItem>
+                <MenuItem onClick={handleCopyToken}>
+                    <ContentCopy fontSize="small" sx={{ mr: 1 }} />
+                    Copy Token
+                </MenuItem>
+            </Menu>
         </Box>
     );
 };

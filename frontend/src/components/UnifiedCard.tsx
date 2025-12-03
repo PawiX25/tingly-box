@@ -7,7 +7,7 @@ interface UnifiedCardProps {
   subtitle?: string;
   children: ReactNode;
   // 格子倍数配置：widthUnits × heightUnits
-  size?: 'small' | 'medium' | 'large' | 'full';
+  size?: 'small' | 'medium' | 'large' | 'full' | 'header';
   variant?: 'default' | 'outlined' | 'elevated';
   // 自定义格子倍数
   gridUnits?: {
@@ -44,6 +44,10 @@ const presetCardDimensions = {
     widthUnits: 28, // 520px
     minHeightUnits: 24, // 最小高度 480px
   },
+  header: {
+    widthUnits: 28, // 520px
+    minHeightUnits: 7, // 最小高度 320px
+  },
   fullw:{
         widthUnits: 28, // 520px
     minHeightUnits: 12, // 最小高度 480px
@@ -51,7 +55,7 @@ const presetCardDimensions = {
 };
 
 // 计算卡片尺寸的函数
-const getCardDimensions = (size: 'small' | 'medium' | 'large' | 'full', customGridUnits?: { widthUnits?: number; heightUnits?: number }) => {
+const getCardDimensions = (size: 'small' | 'medium' | 'large' | 'full' | 'header', customGridUnits?: { widthUnits?: number; heightUnits?: number }) => {
   const preset = presetCardDimensions[size];
   const width = (customGridUnits?.widthUnits || preset.widthUnits) * BASE_UNIT;
 
@@ -122,13 +126,13 @@ export const UnifiedCard = ({
         {title && (
           <Box sx={{ mb: 2, flexShrink: 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: subtitle ? 1 : 0 }}>
-              <Box sx={{ flex: 1 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
                 <Typography variant="h4" sx={{ fontWeight: 600, color: 'text.primary' }}>
                   {title}
                 </Typography>
+                {leftAction}
               </Box>
               <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                {leftAction}
                 {rightAction}
               </Box>
             </Box>

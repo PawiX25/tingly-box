@@ -284,26 +284,27 @@ const ModelConfigCard = ({
             size="full"
             message={message}
             onClearMessage={() => setMessage(null)}
-            leftAction={
-                <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<AddIcon />}
-                    onClick={addConfigRecord}
-                >
-                    Add Configuration
-                </Button>
-            }
             rightAction={
-                <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    startIcon={<SaveIcon />}
-                    onClick={handleSaveDefaults}
-                >
-                    Save
-                </Button>
+                <>
+                    <Button
+                        variant="contained"
+                        size="small"
+                        startIcon={<AddIcon />}
+                        onClick={addConfigRecord}
+                    >
+                        Add Configuration
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        startIcon={<SaveIcon />}
+                        onClick={handleSaveDefaults}
+                    >
+                        Save
+                    </Button>
+                </>
+
             }
         >
             <Stack spacing={3}>
@@ -520,7 +521,7 @@ const ModelConfigCard = ({
                     </Box>
                 ))}
 
-              </Stack>
+            </Stack>
         </UnifiedCard>
     );
 };
