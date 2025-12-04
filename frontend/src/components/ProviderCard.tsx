@@ -24,6 +24,8 @@ export interface Provider {
 export interface ProviderModelsData {
     [providerName: string]: {
         models: string[];
+        star_models?: string[];
+        last_updated?: string;
     };
 }
 

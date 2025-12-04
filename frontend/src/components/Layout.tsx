@@ -1,8 +1,8 @@
+import { AccountCircle as AccountIcon, CloudQueue as CloudIcon, Dashboard as DashboardIcon, History as HistoryIcon, Logout as LogoutIcon, Menu as MenuIcon, RuleOutlined, Settings as SettingsIcon } from '@mui/icons-material';
+import { Box, Drawer, IconButton, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, IconButton, Menu, MenuItem } from '@mui/material';
-import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
-import { Dashboard as DashboardIcon, Settings as SettingsIcon, History as HistoryIcon, CloudQueue as CloudIcon, Menu as MenuIcon, Logout as LogoutIcon, AccountCircle as AccountIcon } from '@mui/icons-material';
 import { useState } from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
@@ -43,6 +43,7 @@ const Layout = ({ children }: LayoutProps) => {
   const menuItems = [
     { path: '/', label: 'Dashboard', icon: <DashboardIcon /> },
     { path: '/providers', label: 'Providers', icon: <CloudIcon /> },
+    { path: '/rules', label: 'Rules', icon: <RuleOutlined /> },
     { path: '/system', label: 'System', icon: <SettingsIcon /> },
     { path: '/history', label: 'History', icon: <HistoryIcon /> },
   ];
@@ -77,7 +78,7 @@ const Layout = ({ children }: LayoutProps) => {
           T
         </Box>
         <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
-          Tingly Box
+          Tingly Model Box
         </Typography>
       </Box>
 
@@ -209,7 +210,7 @@ const Layout = ({ children }: LayoutProps) => {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              LLM Config & Proxy Management
+              Live for AI Agent Dev
             </Typography>
             <IconButton
               color="inherit"
