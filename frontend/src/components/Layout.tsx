@@ -114,6 +114,59 @@ const Layout = ({ children }: LayoutProps) => {
           </ListItem>
         ))}
       </List>
+
+      {/* Bottom Section - Slogan and User */}
+      <Box
+        sx={{
+          p: 2,
+          borderTop: '1px solid',
+          borderColor: 'divider',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+        }}
+      >
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            fontSize: '0.75rem',
+            textAlign: 'center',
+            fontStyle: 'italic'
+          }}
+        >
+          Live for AI Agent Dev
+        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <IconButton
+            color="inherit"
+            onClick={handleMenuOpen}
+            sx={{ color: 'text.secondary' }}
+          >
+            <AccountIcon />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right',
+            }}
+            transformOrigin={{
+              vertical: 'bottom',
+              horizontal: 'right',
+            }}
+          >
+            <MenuItem onClick={handleLogout}>
+              <ListItemIcon>
+                <LogoutIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Logout</ListItemText>
+            </MenuItem>
+          </Menu>
+        </Box>
+      </Box>
     </Box>
   );
 
@@ -192,56 +245,6 @@ const Layout = ({ children }: LayoutProps) => {
           flexDirection: 'column',
         }}
       >
-        {/* Top Bar */}
-        <Box
-          sx={{
-            backgroundColor: 'background.paper',
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            px: 3,
-            py: 2,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Typography variant="h5" sx={{ fontWeight: 600, color: 'text.primary' }}>
-            {menuItems.find(item => isActive(item.path))?.label || 'Dashboard'}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Live for AI Agent Dev
-            </Typography>
-            <IconButton
-              color="inherit"
-              onClick={handleMenuOpen}
-              sx={{ color: 'text.secondary' }}
-            >
-              <AccountIcon />
-            </IconButton>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-            >
-              <MenuItem onClick={handleLogout}>
-                <ListItemIcon>
-                  <LogoutIcon fontSize="small" />
-                </ListItemIcon>
-                <ListItemText>Logout</ListItemText>
-              </MenuItem>
-            </Menu>
-          </Box>
-        </Box>
-
         {/* Page Content */}
         <Box
           sx={{
