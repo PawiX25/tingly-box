@@ -13,10 +13,10 @@ import {
     Snackbar,
     Stack,
     Tooltip,
-    Typography,
+    Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import ProviderSelect from '../components/ProviderSelect';
+import { SingleProviderSelect } from '../components/ProviderSelect';
 import UnifiedCard from '../components/UnifiedCard';
 import { api } from '../services/api';
 
@@ -26,6 +26,11 @@ const Dashboard = () => {
     const [providerModels, setProviderModels] = useState<any>({});
     const [loading, setLoading] = useState(true);
     const [selectedOption, setSelectedOption] = useState<any>({ provider: "", model: "" });
+
+    // Composition state for provider select
+    const [expandedProviders, setExpandedProviders] = useState<string[]>([]);
+    const [searchTerms, setSearchTerms] = useState<{ [key: string]: string }>({});
+    const [currentPage, setCurrentPage] = useState<{ [key: string]: number }>({});
 
     // Server info states
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -43,6 +48,32 @@ const Dashboard = () => {
         loadAllData();
         loadToken();
     }, []);
+
+    // Auto-expand provider and navigate to model page when selections change
+    useEffect(() => {
+        if (selectedOption?.provider) {
+            // Auto-expand the selected provider if not already expanded
+            setExpandedProviders(prev =>
+                prev.includes(selectedOption.provider) ? prev : [...prev, selectedOption.provider]
+            );
+
+            // Auto-navigate to the page containing the selected model
+            if (selectedOption?.model) {
+                const allModels = providerModels?.[selectedOption.provider]?.models || [];
+                const modelIndex = allModels.indexOf(selectedOption.model);
+
+                // Only navigate if the model exists in the provider's model list
+                if (modelIndex !== -1) {
+                    const MODELS_PER_PAGE = 15;
+                    const targetPage = Math.floor(modelIndex / MODELS_PER_PAGE) + 1;
+                    setCurrentPage(prev => ({
+                        ...prev,
+                        [selectedOption.provider]: targetPage
+                    }));
+                }
+            }
+        }
+    }, [selectedOption, providerModels]);
 
     const loadToken = async () => {
         const result = await api.getToken();
@@ -136,6 +167,40 @@ const Dashboard = () => {
         }
     };
 
+    // Composition handlers for provider select
+    const handleModelSelect = (provider: any, model: string) => {
+        console.log("on select", provider, model);
+        setSelectedOption({ provider: provider.name, model: model });
+
+        // Show banner with selected provider and model info
+        setBannerProvider(provider.name);
+        setBannerModel(model);
+        setShowBanner(true);
+
+        // Ensure the selected provider is expanded
+        if (!expandedProviders.includes(provider.name)) {
+            setExpandedProviders(prev => [...prev, provider.name]);
+        }
+    };
+
+    const handleExpandToggle = (providerName: string, expanded: boolean) => {
+        if (expanded) {
+            setExpandedProviders(prev => [...prev, providerName]);
+        } else {
+            setExpandedProviders(prev => prev.filter(name => name !== providerName));
+        }
+    };
+
+    const handleSearchChange = (providerName: string, searchTerm: string) => {
+        setSearchTerms(prev => ({ ...prev, [providerName]: searchTerm }));
+        // Reset to first page when searching
+        setCurrentPage(prev => ({ ...prev, [providerName]: 1 }));
+    };
+
+    const handlePageChange = (providerName: string, page: number) => {
+        setCurrentPage(prev => ({ ...prev, [providerName]: page }));
+    };
+
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -181,7 +246,23 @@ const Dashboard = () => {
             )}
 
             {/* Server Information Header */}
-            <UnifiedCard size="header" width="100%">
+            <UnifiedCard
+                title="Switch Provider & Model"
+                subtitle={`Total: ${providers.length} providers | Enabled: ${providers.filter((p: any) => p.enabled).length}`}
+                size="full"
+                width="100%"
+                rightAction={
+                    <Box>
+                        <Button
+                            variant="contained"
+                            onClick={() => window.location.href = '/providers'}
+                        >
+                            Manage Providers
+                        </Button>
+                    </Box>
+                }
+
+            >
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 6 }}>
                         <Stack spacing={1}>
@@ -321,7 +402,31 @@ const Dashboard = () => {
                             </Box>
                         </Stack>
                     </Grid>
+
+                    <Grid size={{ xs: 12, md: 12 }}>
+                        <Box>
+                            <Stack spacing={2}>
+                                {providers.map((provider: any) => (
+                                    <SingleProviderSelect
+                                        key={provider.name}
+                                        provider={provider}
+                                        providerModels={providerModels}
+                                        selectedProvider={selectedOption?.provider}
+                                        selectedModel={selectedOption?.model}
+                                        isExpanded={expandedProviders.includes(provider.name)}
+                                        searchTerms={searchTerms}
+                                        currentPage={currentPage}
+                                        onModelSelect={handleModelSelect}
+                                        onExpandToggle={handleExpandToggle}
+                                        onSearchChange={handleSearchChange}
+                                        onPageChange={handlePageChange}
+                                    />
+                                ))}
+                            </Stack>
+                        </Box>
+                    </Grid>
                 </Grid>
+
             </UnifiedCard>
 
             {/* Token Modal */}
@@ -364,36 +469,9 @@ const Dashboard = () => {
 
             {/* Providers Quick Settings */}
             <UnifiedCard
-                title="Switch Provider & Model"
-                subtitle={`Total: ${providers.length} providers | Enabled: ${providers.filter((p: any) => p.enabled).length}`}
-                size="full"
-                width="100%"
-                rightAction={
-                    <Box>
-                        <Button
-                            variant="contained"
-                            onClick={() => window.location.href = '/providers'}
-                        >
-                            Manage Providers
-                        </Button>
-                    </Box>
-                }
+
             >
-                <ProviderSelect
-                    providers={providers}
-                    providerModels={providerModels}
-                    onSelected={(option) => {
-                        setSelectedOption(option);
-                        // Show banner with selected provider and model info
-                        if (option && option.provider && option.model) {
-                            setBannerProvider(option.provider);
-                            setBannerModel(option.model);
-                            setShowBanner(true);
-                        }
-                    }}
-                    selectedProvider={selectedOption?.provider}
-                    selectedModel={selectedOption?.model}
-                />
+
             </UnifiedCard>
 
             <Snackbar
