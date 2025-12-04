@@ -241,7 +241,7 @@ export const SingleProviderSelect = ({
                     </IconButton>
                 </Stack>
             </AccordionSummary>
-            <AccordionDetails>
+            <AccordionDetails sx={{ maxHeight: 500, overflowY: 'auto' }}>
                 <Box sx={{ pt: 2 }}>
                     {/* Search and Filter */}
                     <Box sx={{ mb: 3 }}>

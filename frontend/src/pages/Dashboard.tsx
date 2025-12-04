@@ -1,4 +1,4 @@
-import { ContentCopy as CopyIcon, Info as InfoIcon, Refresh as RefreshIcon, Terminal as TerminalIcon } from '@mui/icons-material';
+import { Add as AddIcon, ContentCopy as CopyIcon, Info as InfoIcon, Refresh as RefreshIcon, Terminal as TerminalIcon } from '@mui/icons-material';
 import {
     Alert,
     AlertTitle,
@@ -16,6 +16,7 @@ import {
     Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { ProviderDialog } from '../components/ProviderDialog';
 import { SingleProviderSelect } from '../components/ProviderSelect';
 import UnifiedCard from '../components/UnifiedCard';
 import { api } from '../services/api';
@@ -44,6 +45,13 @@ const Dashboard = () => {
     const [showBanner, setShowBanner] = useState(false);
     const [bannerProvider, setBannerProvider] = useState<string>('');
     const [bannerModel, setBannerModel] = useState<string>('');
+
+    // Add provider dialog state
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [providerName, setProviderName] = useState('');
+    const [providerApiBase, setProviderApiBase] = useState('');
+    const [providerApiVersion, setProviderApiVersion] = useState('openai');
+    const [providerToken, setProviderToken] = useState('');
 
     useEffect(() => {
         loadAllData();
@@ -172,6 +180,42 @@ const Dashboard = () => {
         setCurrentPage(prev => ({ ...prev, [providerName]: page }));
     };
 
+    // Provider dialog handlers
+    const handleAddProviderClick = () => {
+        setProviderName('');
+        setProviderApiBase('');
+        setProviderApiVersion('openai');
+        setProviderToken('');
+        setAddDialogOpen(true);
+    };
+
+    const handleAddProvider = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        const providerData = {
+            name: providerName,
+            api_base: providerApiBase,
+            api_version: providerApiVersion,
+            token: providerToken,
+        };
+
+        const result = await api.addProvider(providerData);
+
+        if (result.success) {
+            setSnackbarMessage('Provider added successfully!');
+            setSnackbarOpen(true);
+            setProviderName('');
+            setProviderApiBase('');
+            setProviderApiVersion('openai');
+            setProviderToken('');
+            setAddDialogOpen(false);
+            await loadProviders();
+        } else {
+            setSnackbarMessage(`Failed to add provider: ${result.error}`);
+            setSnackbarOpen(true);
+        }
+    };
+
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -186,7 +230,7 @@ const Dashboard = () => {
     const token = generatedToken || modelToken;
 
     return (
-        <Box>
+        <Box >
             {/* Provider/Model Selection Banner */}
             {showBanner && (
                 <Alert
@@ -238,10 +282,6 @@ const Dashboard = () => {
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 6 }}>
                         <Stack spacing={1}>
-                            {/* <Typography variant="h6" color="primary" fontWeight={600}>
-                                API Endpoints
-                            </Typography> */}
-
                             {/* OpenAI Row */}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="body2" color="text.secondary" sx={{ minWidth: 80 }}>
@@ -322,10 +362,6 @@ const Dashboard = () => {
 
                     <Grid size={{ xs: 12, md: 6 }}>
                         <Stack spacing={1}>
-                            {/* <Typography variant="h6" color="primary" fontWeight={600}>
-                                Authentication
-                            </Typography> */}
-
                             {/* Token Row */}
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                 <Typography variant="body2" color="text.secondary" sx={{ minWidth: 60 }}>
@@ -403,29 +439,71 @@ const Dashboard = () => {
                         </Stack>
                     </Grid>
 
-                    <Grid size={{ xs: 12, md: 12 }}>
-                        {/* Providers Quick Settings */}
-                        <Stack spacing={2}>
-                            {providers.map((provider: any) => (
-                                <SingleProviderSelect
-                                    key={provider.name}
-                                    provider={provider}
-                                    providerModels={providerModels}
-                                    selectedProvider={selectedOption?.provider}
-                                    selectedModel={selectedOption?.model}
-                                    isExpanded={expandedProviders.includes(provider.name)}
-                                    searchTerms={searchTerms}
-                                    currentPage={currentPage}
-                                    onModelSelect={handleModelSelect}
-                                    onExpandToggle={handleExpandToggle}
-                                    onSearchChange={handleSearchChange}
-                                    onPageChange={handlePageChange}
-                                />
-                            ))}
-                        </Stack>
-                    </Grid>
-                </Grid>
+                    {providers.length > 0 ? (
 
+                        <Grid size={{ xs: 12, md: 12 }}>
+                            {/* Providers Quick Settings */}
+                            <Stack spacing={2}>
+                                {providers.map((provider: any) => (
+                                    <SingleProviderSelect
+                                        key={provider.name}
+                                        provider={provider}
+                                        providerModels={providerModels}
+                                        selectedProvider={selectedOption?.provider}
+                                        selectedModel={selectedOption?.model}
+                                        isExpanded={expandedProviders.includes(provider.name)}
+                                        searchTerms={searchTerms}
+                                        currentPage={currentPage}
+                                        onModelSelect={handleModelSelect}
+                                        onExpandToggle={handleExpandToggle}
+                                        onSearchChange={handleSearchChange}
+                                        onPageChange={handlePageChange}
+                                    />
+                                ))}
+                            </Stack>
+                        </Grid>
+                    ) : (
+                        <Box textAlign="center" py={8} width={"100%"}>
+                            <IconButton
+                                size="large"
+                                onClick={handleAddProviderClick}
+                                sx={{
+                                    backgroundColor: 'primary.main',
+                                    color: 'white',
+                                    width: 80,
+                                    height: 80,
+                                    mb: 3,
+                                    '&:hover': {
+                                        backgroundColor: 'primary.dark',
+                                        transform: 'scale(1.05)',
+                                    },
+                                }}
+                            >
+                                <AddIcon sx={{ fontSize: 40 }} />
+                            </IconButton>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
+                                No Providers Available
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
+                                Get started by adding your first AI provider. You can connect to OpenAI, Anthropic, or any compatible API endpoint.
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
+                                <strong>Steps to get started:</strong><br />
+                                1. Click the + button to add a provider<br />
+                                2. Configure your API credentials<br />
+                                3. Select your preferred model
+                            </Typography>
+                            <Button
+                                variant="contained"
+                                startIcon={<AddIcon />}
+                                onClick={handleAddProviderClick}
+                                size="large"
+                            >
+                                Add Your First Provider
+                            </Button>
+                        </Box>
+                    )}
+                </Grid>
             </UnifiedCard>
 
             {/* Token Modal */}
@@ -466,6 +544,20 @@ const Dashboard = () => {
                 </DialogContent>
             </Dialog>
 
+            {/* Add Provider Dialog */}
+            <ProviderDialog
+                open={addDialogOpen}
+                onClose={() => setAddDialogOpen(false)}
+                onSubmit={handleAddProvider}
+                providerName={providerName}
+                onProviderNameChange={setProviderName}
+                providerApiBase={providerApiBase}
+                onProviderApiBaseChange={setProviderApiBase}
+                providerApiVersion={providerApiVersion}
+                onProviderApiVersionChange={setProviderApiVersion}
+                providerToken={providerToken}
+                onProviderTokenChange={setProviderToken}
+            />
 
             <Snackbar
                 open={snackbarOpen}
